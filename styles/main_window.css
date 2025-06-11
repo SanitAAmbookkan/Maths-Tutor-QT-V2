@@ -1,25 +1,30 @@
-/* Main Window Styles */
-QMainWindow {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                stop:0 #f7fafc, stop:1 #ebf4ff);
+QWidget[class="central-widget"] {
+    background-color: #f0f4f8;
 }
 
-.central-widget {
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 16px;
-    margin: 20px;
-    border: 1px solid rgba(203, 213, 224, 0.5);
+QLabel[class="main-title"] {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    padding: 15px;
 }
 
-.main-title {
-    font-size: 36px;
-    font-weight: 700;
-    color: #2b6cb0;
-    margin-bottom: 12px;
+QLabel[class="subtitle"] {
+    font-size: 16px;
+    color: #34495e;
+    padding: 10px;
 }
 
-.subtitle {
-    font-size: 18px;
-    color: #4a5568;
-    font-weight: 500;
+QPushButton[class="menu-button"] {
+    background-color: #3498db;
+    color: white;
+    font-size: 16px;
+    padding: 15px;
+    border-radius: 10px;
+    min-width: 100px;
+    min-height: 60px;
+}
+
+QPushButton[class="menu-button"]:hover {
+    background-color: #2980b9;
 }

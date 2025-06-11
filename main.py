@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -7,7 +7,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Maths Tutor")
         self.setFixedSize(400, 300)
 
-        label = QLabel("Welcome to Maths Tutor!", self)
+        label = QLabel("Welcome to Maths-Tutor!", self)
         label.move(100, 130)
 
 if __name__ == "__main__":

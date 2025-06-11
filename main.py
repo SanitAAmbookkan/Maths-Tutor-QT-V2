@@ -17,7 +17,7 @@ class RootWindow(QDialog):
         self.init_ui()
         
         # Load style
-        self.load_style("language_dialog.css")
+        self.load_style("language_dialog.qss")
 
     def show_page(self, name):
         page = self.blank_pages.get(name)
@@ -76,9 +76,9 @@ class RootWindow(QDialog):
         line.setFrameShadow(QFrame.Sunken)
         return line
     
-    def load_style(self, css_file):
-        """Load styles from external CSS file"""
-        style_path = os.path.join("styles", css_file)
+    def load_style(self, qss_file):
+        """Load styles from external QSS file"""
+        style_path = os.path.join("styles", qss_file)
         if os.path.exists(style_path):
             with open(style_path, "r") as f:
                 self.setStyleSheet(f.read())
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
         self.resize(900, 600)  # Stretchable window
         
         self.init_ui(language)
-        self.load_style("main_window.css")
+        self.load_style("main_window.qss")
 
     def init_ui(self, language):
         # Central widget and main layout
@@ -150,9 +150,9 @@ class MainWindow(QMainWindow):
         if page:
             self.pages.setCurrentWidget(page)
 
-    def load_style(self, css_file):
+    def load_style(self, qss_file):
         import os
-        style_path = os.path.join("styles", css_file)
+        style_path = os.path.join("styles", qss_file)
         if os.path.exists(style_path):
             with open(style_path, "r") as f:
                 self.setStyleSheet(f.read())
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     
     # Set application style
-    app_style_path = os.path.join("styles", "app.css")
+    app_style_path = os.path.join("styles", "app.qss")
     if os.path.exists(app_style_path):
         with open(app_style_path, "r") as f:
             app.setStyleSheet(f.read())

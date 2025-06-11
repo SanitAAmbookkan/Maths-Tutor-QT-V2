@@ -1,6 +1,4 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
-
 import os
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, QDialog, 
                             QVBoxLayout, QPushButton, QComboBox, QHBoxLayout,

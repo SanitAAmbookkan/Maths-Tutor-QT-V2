@@ -1,0 +1,85 @@
+/* Language Dialog Styles */
+QDialog {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #f7fafc, stop:1 #ebf4ff);
+    border-radius: 12px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2b6cb0;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #4a5568;
+    margin-bottom: 16px;
+}
+
+.combo-box {
+    min-width: 280px;
+    padding: 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
+    selection-background-color: #4299e1;
+}
+
+.combo-box:hover {
+    border-color: #a0aec0;
+}
+
+.combo-box:drop-down {
+    width: 30px;
+    border-left: 1px solid #cbd5e0;
+}
+
+.checkbox {
+    font-size: 13px;
+    spacing: 8px;
+    margin-top: 12px;
+    color: #4a5568;
+}
+
+.checkbox::indicator {
+    width: 16px;
+    height: 16px;
+}
+
+.checkbox::indicator:checked {
+    background-color: #4299e1;
+    border: 1px solid #3182ce;
+    border-radius: 4px;
+    image: url(icons/check.svg);
+}
+
+.primary-button {
+    background-color: #4299e1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.primary-button:hover {
+    background-color: #3182ce;
+}
+
+.danger-button {
+    background-color: #f56565;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.danger-button:hover {
+    background-color: #e53e3e;
+}

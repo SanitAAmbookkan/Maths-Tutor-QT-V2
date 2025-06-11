@@ -1,10 +1,10 @@
 import sys
 import os
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QLabel, QDialog, 
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, QDialog, 
                             QVBoxLayout, QPushButton, QComboBox, QHBoxLayout,
                             QCheckBox, QFrame, QWidget)
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -65,8 +65,8 @@ class RootWindow(QDialog):
     
     def create_horizontal_line(self):
         line = QFrame()
-        line.setFrameShape(QFrame.Shape.HLine)
-        line.setFrameShadow(QFrame.Shadow.Sunken)
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
         return line
     
     def load_style(self, css_file):
@@ -101,8 +101,8 @@ class MainWindow(QMainWindow):
         subtitle.setProperty("class", "subtitle")
         
         layout.addStretch()
-        layout.addWidget(title, 0, Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(subtitle, 0, Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title, 0, Qt.AlignCenter)
+        layout.addWidget(subtitle, 0, Qt.AlignCenter)
         layout.addStretch()
         
         self.setCentralWidget(central_widget)
@@ -124,7 +124,7 @@ if __name__ == "__main__":
             app.setStyleSheet(f.read())
     
     root_window = RootWindow()
-    if root_window.exec() == QDialog.DialogCode.Accepted:
+    if root_window.exec_() == QDialog.Accepted:
         main_window = MainWindow(root_window.language_combo.currentText())
         main_window.show()
-        sys.exit(app.exec())
+        sys.exit(app.exec_())

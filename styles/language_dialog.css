@@ -32,7 +32,7 @@ QDialog {
     border-color: #a0aec0;
 }
 
-.combo-box:drop-down {
+.combo-box::drop-down {
     width: 30px;
     border-left: 1px solid #cbd5e0;
 }
@@ -47,13 +47,13 @@ QDialog {
 .checkbox::indicator {
     width: 16px;
     height: 16px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
 }
 
 .checkbox::indicator:checked {
     background-color: #4299e1;
     border: 1px solid #3182ce;
-    border-radius: 4px;
-    image: url(icons/check.svg);
 }
 
 .primary-button {

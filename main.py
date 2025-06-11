@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, QDialog,
                             QCheckBox, QFrame, QWidget)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QGridLayout, QStackedWidget
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -17,7 +18,12 @@ class RootWindow(QDialog):
         
         # Load style
         self.load_style("language_dialog.css")
-    
+
+    def show_page(self, name):
+        page = self.blank_pages.get(name)
+        if page:
+            self.pages.setCurrentWidget(page)
+
     def init_ui(self):
         # Create widgets
         title_label = QLabel("Welcome to Maths Tutor!")
@@ -62,6 +68,7 @@ class RootWindow(QDialog):
         # Connections
         self.cancel_button.clicked.connect(self.reject)
         self.ok_button.clicked.connect(self.accept)
+
     
     def create_horizontal_line(self):
         line = QFrame()
@@ -76,39 +83,75 @@ class RootWindow(QDialog):
             with open(style_path, "r") as f:
                 self.setStyleSheet(f.read())
 
+from PyQt5.QtWidgets import (
+    QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
+    QGridLayout, QStackedWidget, QSizePolicy
+)
+from PyQt5.QtCore import Qt
+
 class MainWindow(QMainWindow):
     def __init__(self, language="English"):
         super().__init__()
         self.setWindowTitle(f"Maths Tutor - {language}")
-        self.setFixedSize(800, 500)
+        self.resize(900, 600)  # Stretchable window
         
-        # Initialize UI
         self.init_ui(language)
-        
-        # Load style
         self.load_style("main_window.css")
-    
+
     def init_ui(self, language):
-        # Central widget
+        # Central widget and main layout
         central_widget = QWidget()
         central_widget.setProperty("class", "central-widget")
-        layout = QVBoxLayout(central_widget)
-        
+        main_layout = QVBoxLayout(central_widget)
+
+        # Title
         title = QLabel("Welcome to Maths Tutor!")
         title.setProperty("class", "main-title")
-        
+        title.setAlignment(Qt.AlignCenter)
+
+        # Subtitle
         subtitle = QLabel(f"Ready to learn in {language}!")
         subtitle.setProperty("class", "subtitle")
-        
-        layout.addStretch()
-        layout.addWidget(title, 0, Qt.AlignCenter)
-        layout.addWidget(subtitle, 0, Qt.AlignCenter)
-        layout.addStretch()
-        
+        subtitle.setAlignment(Qt.AlignCenter)
+
+        # Grid layout for buttons
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(15)
+        self.button_names = ["Time", "Currency", "Distance", "Story", "Bellring", "Operations"]
+
+        self.pages = QStackedWidget()
+        self.blank_pages = {}
+
+        for i, name in enumerate(self.button_names):
+            button = QPushButton(name)
+            button.setProperty("class", "menu-button")
+            button.setFixedSize(150, 40)
+            
+            row = i // 3
+            col = i % 3
+            grid_layout.addWidget(button, row, col)
+
+            # Blank page setup
+            page = QWidget()
+
+
+            button.clicked.connect(lambda checked, n=name: self.show_page(n))
+
+        # Add everything to layout
+        main_layout.addWidget(title)
+        main_layout.addWidget(subtitle)
+        main_layout.addLayout(grid_layout, stretch=2)
+        main_layout.addWidget(self.pages, stretch=5)
+
         self.setCentralWidget(central_widget)
-    
+
+    def show_page(self, name):
+        page = self.blank_pages.get(name)
+        if page:
+            self.pages.setCurrentWidget(page)
+
     def load_style(self, css_file):
-        """Load styles from external CSS file"""
+        import os
         style_path = os.path.join("styles", css_file)
         if os.path.exists(style_path):
             with open(style_path, "r") as f:

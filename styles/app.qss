@@ -1,0 +1,5 @@
+/* Base styles */
+* {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #2d3748;
+}

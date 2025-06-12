@@ -1,0 +1,30 @@
+QWidget[class="central-widget"] {
+    background-color: #f0f4f8;
+}
+
+QLabel[class="main-title"] {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    padding: 15px;
+}
+
+QLabel[class="subtitle"] {
+    font-size: 16px;
+    color: #34495e;
+    padding: 10px;
+}
+
+QPushButton[class="menu-button"] {
+    background-color: #3498db;
+    color: white;
+    font-size: 16px;
+    padding: 15px;
+    border-radius: 10px;
+    min-width: 100px;
+    min-height: 60px;
+}
+
+QPushButton[class="menu-button"]:hover {
+    background-color: #2980b9;
+}

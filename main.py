@@ -22,7 +22,7 @@ class RootWindow(QDialog):
         self.setWindowTitle("Maths Tutor - Language Selection")
         self.setFixedSize(400, 250)
         self.init_ui()
-        self.load_style("language_dialog.css")
+        self.load_style("language_dialog.qss")
 
     def init_ui(self):
         title_label = QLabel("Welcome to Maths Tutor!")
@@ -70,8 +70,8 @@ class RootWindow(QDialog):
         line.setFrameShadow(QFrame.Sunken)
         return line
 
-    def load_style(self, css_file):
-        style_path = os.path.join("styles", css_file)
+    def load_style(self, qss_file):
+        style_path = os.path.join("styles", qss_file)
         if os.path.exists(style_path):
             with open(style_path, "r") as f:
                 self.setStyleSheet(f.read())
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         self.resize(900, 600)
         self.language = language
         self.init_ui()
-        self.load_style("main_window.css")
+        self.load_style("main_window.qss")
 
     def init_ui(self):
         self.central_widget = QWidget()
@@ -152,8 +152,8 @@ class MainWindow(QMainWindow):
                 widget.setParent(None)
         self.main_layout.addWidget(self.menu_widget)
 
-    def load_style(self, css_file):
-        path = os.path.join("styles", css_file)
+    def load_style(self, qss_file):
+        path = os.path.join("styles", qss_file)
         if os.path.exists(path):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    app_style = os.path.join("styles", "app.css")
+    app_style = os.path.join("styles", "app.qss")
     if os.path.exists(app_style):
         with open(app_style, "r") as f:
             app.setStyleSheet(f.read())

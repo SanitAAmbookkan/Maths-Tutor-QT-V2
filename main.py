@@ -15,6 +15,12 @@ from pages.distance_page import create_distance_page
 from pages.bellring_page import create_bellring_page
 from pages.operations_page import create_operations_page
 
+def set_accessibility(widget, name, description=None):
+    widget.setAccessibleName(name)
+    if description:
+        widget.setAccessibleDescription(description)
+
+
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -32,7 +38,7 @@ class RootWindow(QDialog):
         language_label.setProperty("class", "subtitle")
 
         self.language_combo = QComboBox()
-        self.language_combo.addItems(["English", "Español", "Français", "Deutsch", "中文"])
+        self.language_combo.addItems(["English", "Hindi", "Malayalam", "Tamil", "Arabic","Sanskrit"])
         self.language_combo.setProperty("class", "combo-box")
 
         self.remember_check = QCheckBox("Remember my selection")
@@ -43,6 +49,15 @@ class RootWindow(QDialog):
         self.cancel_button.setProperty("class", "danger-button")
         self.ok_button = QPushButton("Continue")
         self.ok_button.setProperty("class", "primary-button")
+
+
+def announce_language(lang):
+    self.language_combo.setAccessibleDescription(f"Selected language is {lang}")
+    QAccessible.updateAccessibility(self.language_combo, QAccessible.Event.Alert)
+
+self.language_combo.currentTextChanged.connect(announce_language)
+announce_language(self.language_combo.currentText())  # announce initial selection
+
 
         main_layout = QVBoxLayout()
         button_layout = QHBoxLayout()

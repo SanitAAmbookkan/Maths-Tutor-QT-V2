@@ -19,3 +19,4 @@ def load_pages(section_name, back_callback):
 
     page.setLayout(create_vertical_layout(widgets))
     return page
+

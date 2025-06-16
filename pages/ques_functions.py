@@ -18,4 +18,6 @@ def load_pages(section_name, back_callback):
     widgets.append(create_back_button(back_callback))
 
     page.setLayout(create_vertical_layout(widgets))
+    print(f"[QUESTION SHOWN] {questions}")
     return page
+

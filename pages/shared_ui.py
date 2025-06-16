@@ -34,3 +34,16 @@ def create_menu_button(text: str, callback) -> QPushButton:
     button.setProperty("class", "menu-button")
     button.clicked.connect(callback)
     return button
+def create_vertical_layout(widgets: list) -> QVBoxLayout:
+    layout = QVBoxLayout()
+    layout.setAlignment(Qt.AlignCenter)
+    for widget in widgets:
+        layout.addWidget(widget)
+    return layout
+
+def create_back_button(callback) -> QPushButton:
+    back_btn = QPushButton("Back to Menu")
+    back_btn.setFixedSize(150, 40)
+    back_btn.setProperty("class", "menu-button")
+    back_btn.clicked.connect(callback)
+    return back_btn

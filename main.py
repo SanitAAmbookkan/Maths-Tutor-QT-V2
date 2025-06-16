@@ -7,13 +7,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from pages.ques_functions import load_pages  # ← your new function
 
-def set_accessibility(widget, name, description=None):
-    widget.setAccessibleName(name)
-    if description:
-        widget.setAccessibleDescription(description)
-
-
-
 class RootWindow(QDialog):
     def __init__(self):
         super().__init__()
@@ -33,18 +26,6 @@ class RootWindow(QDialog):
         self.language_combo = QComboBox()
         self.language_combo.addItems(languages)
         self.language_combo.setProperty("class", "combo-box")
-
-# Accessibility: Add accessible text per item
-        for i, lang in enumerate(languages):
-            self.language_combo.setItemData(i, lang, Qt.AccessibleTextRole)
-
-# Accessibility: Add combo box name and description
-        set_accessibility(self.language_combo, "Language Selection", "Select your preferred language from the list")
-
-
-        # Accessibility: Make each language readable by screen readers
-        for i, lang in enumerate(languages):
-            self.language_combo.setItemData(i, lang, Qt.AccessibleTextRole)
 
 
         self.remember_check = QCheckBox("Remember my selection")

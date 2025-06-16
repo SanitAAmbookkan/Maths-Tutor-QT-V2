@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from pages.ques_functions import load_pages  # ← your new function
 
-
 class RootWindow(QDialog):
     def __init__(self):
         super().__init__()
@@ -23,9 +22,11 @@ class RootWindow(QDialog):
         language_label = QLabel("Select your preferred language:")
         language_label.setProperty("class", "subtitle")
 
+        languages = ["English", "हिंदी", "മലയാളം", "தமிழ்", "عربي", "संस्कृत"]
         self.language_combo = QComboBox()
-        self.language_combo.addItems(["English", "Español", "Français", "Deutsch", "中文"])
+        self.language_combo.addItems(languages)
         self.language_combo.setProperty("class", "combo-box")
+
 
         self.remember_check = QCheckBox("Remember my selection")
         self.remember_check.setChecked(True)

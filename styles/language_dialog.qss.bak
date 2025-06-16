@@ -1,0 +1,96 @@
+/* Language Dialog Styles */
+QDialog {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #e0f2fe, stop:1 #bae6fd); /* soft blue gradient */
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #7dd3fc;
+}
+
+QLabel[class="title"] {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0284c7;  /* strong blue */
+    margin-bottom: 12px;
+}
+
+QLabel[class="subtitle"] {
+    font-size: 15px;
+    color: #475569;  /* dark slate */
+    margin-bottom: 20px;
+}
+
+QComboBox[class="combo-box"] {
+    min-width: 300px;
+    padding: 10px 12px;
+    border: 1px solid #7dd3fc;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 15px;
+    color: #1e293b;
+}
+
+QComboBox[class="combo-box"]:hover {
+    border-color: #38bdf8;
+    background-color: #e0f2fe;
+}
+
+QComboBox[class="combo-box"]::drop-down {
+    width: 30px;
+    border-left: 1px solid #7dd3fc;
+}
+
+QCheckBox[class="checkbox"] {
+    font-size: 14px;
+    spacing: 8px;
+    margin-top: 16px;
+    color: #475569;
+}
+
+QCheckBox[class="checkbox"]::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid #7dd3fc;
+    background-color: #fff;
+}
+
+QCheckBox[class="checkbox"]::indicator:checked {
+    background-color: #0ea5e9;
+    border: 1px solid #0284c7;
+    image: url(icons/check.svg);
+}
+
+/* Primary Button */
+QPushButton[class="primary-button"] {
+    background-color: #0284c7;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 15px;
+    min-width: 120px;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton[class="primary-button"]:hover {
+    background-color: #0369a1;
+}
+
+/* Danger Button */
+QPushButton[class="danger-button"] {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 15px;
+    min-width: 120px;
+    transition: background-color 0.3s ease;
+}
+
+QPushButton[class="danger-button"]:hover {
+    background-color: #b91c1c;
+}

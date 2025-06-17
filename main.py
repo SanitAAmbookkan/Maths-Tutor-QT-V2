@@ -72,6 +72,8 @@ class MainWindow(QMainWindow):
         self.language = language
         self.init_ui()
         self.load_style("main_window.qss")
+        self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
+
 
     def init_ui(self):
         self.central_widget = QWidget()
@@ -109,16 +111,26 @@ class MainWindow(QMainWindow):
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
+        settings_button = QPushButton("Settings")
+        settings_button.setFixedSize(150, 40)
+        settings_button.setProperty("class", "menu-button")
+        settings_button.clicked.connect(self.open_settings)
+
+        row, col = divmod(len(sections), 3)
+        button_grid.addWidget(settings_button, row, col)
 
         return button_grid
+   
 
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
         for i in reversed(range(self.main_layout.count())):
+            
             widget = self.main_layout.itemAt(i).widget()
             if widget:
                 widget.setParent(None)
-        page = load_pages(name, self.back_to_main_menu)  # ← Unified page with questions
+        page = load_pages(name, self.back_to_main_menu, self.difficulty_index)
+         # ← Unified page with questions
         self.main_layout.addWidget(page)
 
     def back_to_main_menu(self):
@@ -127,13 +139,49 @@ class MainWindow(QMainWindow):
             if widget:
                 widget.setParent(None)
         self.main_layout.addWidget(self.menu_widget)
-
+    
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)
         if os.path.exists(path):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
 
+    def open_settings(self):
+        self.clear_main_layout()
+
+        settings_widget = QWidget()
+        layout = QVBoxLayout()
+
+        title = QLabel("Settings")
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+
+        # Difficulty dropdown
+        difficulty_label = QLabel("Select Difficulty:")
+        layout.addWidget(difficulty_label)
+
+        self.difficulty_selector = QComboBox()
+        self.difficulty_selector.addItems(["Easy", "Medium", "Hard", "Very Hard", "Extreme"])
+        self.difficulty_selector.setCurrentIndex(self.difficulty_index-1)
+        self.difficulty_selector.currentIndexChanged.connect(self.change_difficulty)
+
+        layout.addWidget(self.difficulty_selector)
+
+    # Back button
+        back_button = QPushButton("Back")
+        back_button.clicked.connect(self.back_to_main_menu)
+        layout.addWidget(back_button)
+
+        settings_widget.setLayout(layout)
+        self.main_layout.addWidget(settings_widget)
+    def change_difficulty(self, index):
+        print(f"[INFO] Difficulty changed to index: {index+1}")
+        self.difficulty_index = index+1
+    def clear_main_layout(self):
+        for i in reversed(range(self.main_layout.count())):
+            widget = self.main_layout.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

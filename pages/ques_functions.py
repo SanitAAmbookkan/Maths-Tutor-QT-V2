@@ -5,19 +5,17 @@ from pages.shared_ui import (
     create_back_button
 )
 from question.loader import get_questions
+from pages.ques_ui import create_question_widget  # ⬅️ Import here
 
-
-def load_pages(section_name, back_callback):
+def load_pages(section_name, back_callback, difficulty_index):
     page = create_colored_widget("#e0f7fa")
 
-    # Collect all widgets for layout
     widgets = [create_label(f"{section_name} Section", font_size=20)]
-    questions = get_questions(section_name)
-    for q in questions:
-        widgets.append(create_label(q, font_size=14, bold=False))
+    questions = get_questions(section_name, difficulty_index)
+
+    for q, answer in questions:
+        widgets.extend(create_question_widget(q, answer))  # ⬅️ Use extracted function
+
     widgets.append(create_back_button(back_callback))
-
     page.setLayout(create_vertical_layout(widgets))
-    print(f"[QUESTION SHOWN] {questions}")
     return page
-

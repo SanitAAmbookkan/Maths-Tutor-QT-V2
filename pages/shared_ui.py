@@ -28,12 +28,13 @@ def create_colored_page(title: str, color: str = "#d0f0c0") -> QWidget:
     page.setLayout(layout)
     return page
 
-def create_menu_button(text: str, callback) -> QPushButton:
+def create_menu_button(text, callback):
     button = QPushButton(text)
-    button.setFixedSize(150, 40)
+    button.setFixedSize(200, 40)
     button.setProperty("class", "menu-button")
     button.clicked.connect(callback)
     return button
+
 def create_vertical_layout(widgets: list) -> QVBoxLayout:
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignCenter)

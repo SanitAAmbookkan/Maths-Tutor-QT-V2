@@ -48,7 +48,7 @@ class QuestionProcessor:
         print(f"[DEBUG] Operands: {operands}")
 
         # Replace placeholders in question and formula
-        question_template = str(self.df.iloc[self.rowIndex, 0])  # Column 0: question
+        question_template = str(self.df.iloc[self.rowIndex, 0])  # Column 0: questio
         formula_template = str(self.df.iloc[self.rowIndex, 5])   # Column 5: equation/formula
 
         for i, var in enumerate(variable_names):

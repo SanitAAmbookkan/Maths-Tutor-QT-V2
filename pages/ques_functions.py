@@ -15,7 +15,7 @@ def load_pages(section_name, back_callback, main_window=None):
     # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
         widgets.append(create_label("Choose an Operation", font_size=20))
-        for sub in ["Addition", "Subtraction", "Multiplication", "Division"]:
+        for sub in ["Addition", "Subtraction", "Multiplication", "Division","Remainder","Percentage"]:
             widgets.append(
                 create_menu_button(
                     sub,

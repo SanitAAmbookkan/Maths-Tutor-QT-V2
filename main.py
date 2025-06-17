@@ -7,20 +7,23 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from pages.ques_functions import load_pages # ← your new function
 
+from PyQt5.QtCore import QCoreApplication
+_ = QCoreApplication.translate
+
 class RootWindow(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(_("Maths Tutor - Language Selection"))
+        self.setWindowTitle("Maths Tutor - Language Selection")
         self.setFixedSize(400, 250)
         self.init_ui()
         self.load_style("language_dialog.qss")
 
     def init_ui(self):
-        title_label = QLabel(QCoreApplication.translate("app", "Welcome to Maths Tutor!"))
+        title_label = QLabel("Welcome to Maths Tutor!")
 
         title_label.setProperty("class", "title")
 
-        language_label = QLabel(_("Select your preferred language:"))
+        language_label = QLabel("Select your preferred language:")
         language_label.setProperty("class", "subtitle")
 
         languages = ["English", "हिंदी", "മലയാളം", "தமிழ்", "عربي", "संस्कृत"]
@@ -28,11 +31,11 @@ class RootWindow(QDialog):
         self.language_combo.addItems(languages)
         self.language_combo.setProperty("class", "combo-box")
 
-        self.remember_check = QCheckBox(_("Remember my selection"))
+        self.remember_check = QCheckBox("Remember my selection")
         self.remember_check.setChecked(True)
 
-        self.cancel_button = QPushButton(_("Cancel"))
-        self.ok_button = QPushButton(_("Continue"))
+        self.cancel_button = QPushButton("Cancel")
+        self.ok_button = QPushButton("Continue")
 
         layout = QVBoxLayout()
         layout.addWidget(title_label)
@@ -115,13 +118,6 @@ class MainWindow(QMainWindow):
 
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
-<<<<<<< HEAD
-        for i in reversed(range(self.main_layout.count())):
-            widget = self.main_layout.itemAt(i).widget()
-            if widget:
-                widget.setParent(None)
-        page = load_pages(name, self.back_to_main_menu)
-=======
 
         self.menu_widget.hide()  # Just hide, don’t delete
 
@@ -134,7 +130,6 @@ class MainWindow(QMainWindow):
             if old_page and old_page.widget():
                 old_page.widget().deleteLater()
 
->>>>>>> main
         self.main_layout.addWidget(page)
 
 

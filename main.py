@@ -4,17 +4,8 @@ from PyQt5.QtWidgets import (
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
     QWidget, QGridLayout
 )
-<<<<<<< HEAD
-from PyQt5.QtCore import Qt, QCoreApplication
-from pages.ques_functions import load_pages
-
-# Translation helper
-def _(text):
-    return QCoreApplication.translate("app", text)
-=======
 from PyQt5.QtCore import Qt
 from pages.ques_functions import load_pages # ← your new function
->>>>>>> main
 
 class RootWindow(QDialog):
     def __init__(self):

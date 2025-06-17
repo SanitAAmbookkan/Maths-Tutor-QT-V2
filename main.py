@@ -4,12 +4,17 @@ from PyQt5.QtWidgets import (
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
     QWidget, QGridLayout
 )
+<<<<<<< HEAD
 from PyQt5.QtCore import Qt, QCoreApplication
 from pages.ques_functions import load_pages
 
 # Translation helper
 def _(text):
     return QCoreApplication.translate("app", text)
+=======
+from PyQt5.QtCore import Qt
+from pages.ques_functions import load_pages # ← your new function
+>>>>>>> main
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -119,19 +124,41 @@ class MainWindow(QMainWindow):
 
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
+<<<<<<< HEAD
         for i in reversed(range(self.main_layout.count())):
             widget = self.main_layout.itemAt(i).widget()
             if widget:
                 widget.setParent(None)
         page = load_pages(name, self.back_to_main_menu)
+=======
+
+        self.menu_widget.hide()  # Just hide, don’t delete
+
+        # 🧠 Use load_pages for everything, including Operations
+        page = load_pages(name, self.back_to_main_menu, self)
+
+        # 🧹 Remove previously loaded section (if any)
+        if self.main_layout.count() > 1:
+            old_page = self.main_layout.takeAt(1)
+            if old_page and old_page.widget():
+                old_page.widget().deleteLater()
+
+>>>>>>> main
         self.main_layout.addWidget(page)
 
+
+
+
     def back_to_main_menu(self):
-        for i in reversed(range(self.main_layout.count())):
-            widget = self.main_layout.itemAt(i).widget()
-            if widget:
-                widget.setParent(None)
-        self.main_layout.addWidget(self.menu_widget)
+        # Remove current section widget (not the menu itself)
+        if self.main_layout.count() > 1:
+            old_page = self.main_layout.takeAt(1)
+            if old_page and old_page.widget():
+                old_page.widget().deleteLater()
+
+        self.menu_widget.show()
+
+
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)

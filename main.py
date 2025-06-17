@@ -4,22 +4,27 @@ from PyQt5.QtWidgets import (
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
     QWidget, QGridLayout
 )
-from PyQt5.QtCore import Qt
-from pages.ques_functions import load_pages  # ← your new function
+from PyQt5.QtCore import Qt, QCoreApplication
+from pages.ques_functions import load_pages
+
+# Translation helper
+def _(text):
+    return QCoreApplication.translate("app", text)
 
 class RootWindow(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Maths Tutor - Language Selection")
+        self.setWindowTitle(_("Maths Tutor - Language Selection"))
         self.setFixedSize(400, 250)
         self.init_ui()
         self.load_style("language_dialog.qss")
 
     def init_ui(self):
-        title_label = QLabel("Welcome to Maths Tutor!")
+        title_label = QLabel(QCoreApplication.translate("app", "Welcome to Maths Tutor!"))
+
         title_label.setProperty("class", "title")
 
-        language_label = QLabel("Select your preferred language:")
+        language_label = QLabel(_("Select your preferred language:"))
         language_label.setProperty("class", "subtitle")
 
         languages = ["English", "हिंदी", "മലയാളം", "தமிழ்", "عربي", "संस्कृत"]
@@ -27,12 +32,11 @@ class RootWindow(QDialog):
         self.language_combo.addItems(languages)
         self.language_combo.setProperty("class", "combo-box")
 
-
-        self.remember_check = QCheckBox("Remember my selection")
+        self.remember_check = QCheckBox(_("Remember my selection"))
         self.remember_check.setChecked(True)
 
-        self.cancel_button = QPushButton("Cancel")
-        self.ok_button = QPushButton("Continue")
+        self.cancel_button = QPushButton(_("Cancel"))
+        self.ok_button = QPushButton(_("Continue"))
 
         layout = QVBoxLayout()
         layout.addWidget(title_label)
@@ -68,7 +72,7 @@ class RootWindow(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self, language="English"):
         super().__init__()
-        self.setWindowTitle(f"Maths Tutor - {language}")
+        self.setWindowTitle(_("Maths Tutor - {0}").format(language))
         self.resize(900, 600)
         self.language = language
         self.init_ui()
@@ -83,11 +87,11 @@ class MainWindow(QMainWindow):
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
 
-        title = QLabel("Welcome to Maths Tutor!")
+        title = QLabel(_("Welcome to Maths Tutor!"))
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
 
-        subtitle = QLabel(f"Ready to learn in {self.language}!")
+        subtitle = QLabel(_("Ready to learn in {0}!").format(self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
 
@@ -104,7 +108,7 @@ class MainWindow(QMainWindow):
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
 
         for i, name in enumerate(sections):
-            button = QPushButton(name)
+            button = QPushButton(_(name))
             button.setFixedSize(150, 40)
             button.setProperty("class", "menu-button")
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
@@ -119,7 +123,7 @@ class MainWindow(QMainWindow):
             widget = self.main_layout.itemAt(i).widget()
             if widget:
                 widget.setParent(None)
-        page = load_pages(name, self.back_to_main_menu)  # ← Unified page with questions
+        page = load_pages(name, self.back_to_main_menu)
         self.main_layout.addWidget(page)
 
     def back_to_main_menu(self):

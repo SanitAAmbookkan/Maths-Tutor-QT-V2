@@ -7,8 +7,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtWidgets import QStackedWidget, QSizePolicy
 from PyQt5.QtCore import Qt
 
-
-
 from pages.shared_ui import create_footer_buttons 
 from pages.ques_functions import load_pages, upload_excel_with_code  # ← your new function
 
@@ -151,22 +149,47 @@ class MainWindow(QMainWindow):
         )
     
     def create_section_footer(self):
-        return create_footer_buttons(["Help", "About", "Settings"])
+        return create_footer_buttons(
+            ["Help", "About", "Settings"],
+             callbacks={
+            "Settings": self.handle_settings
+        }                         )
 
     def handle_settings(self):
         from settings_dialog import SettingsDialog
-        self.current_difficulty = 1 
 
+        # Create and show the settings dialog
         dialog = SettingsDialog(
-            self,
-            initial_difficulty=self.current_difficulty,
+            parent=self,
+            initial_difficulty=getattr(self, "current_difficulty", 1),
             current_language=self.language
-        )
+            
+            )
 
+        # If the user clicked OK
         if dialog.exec_() == QDialog.Accepted:
+            # Update global difficulty and language
             self.current_difficulty = dialog.get_difficulty_index()
             self.language = dialog.get_selected_language()
+
+            # Update window title
             self.setWindowTitle(f"Maths Tutor - {self.language}")
+
+            # Reload current section if not in main menu
+            current_widget = self.stack.currentWidget()
+            if current_widget != self.menu_widget:
+                for section_name, page in self.section_pages.items():
+                    if page == current_widget:
+                        self.section_pages.pop(section_name)
+                        new_page = load_pages(
+                            section_name,
+                            back_callback=self.back_to_main_menu,
+                            main_window=self
+                        )
+                        self.section_pages[section_name] = new_page
+                        self.stack.addWidget(new_page)
+                        self.stack.setCurrentWidget(new_page)
+                        break
 
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
@@ -175,13 +198,15 @@ class MainWindow(QMainWindow):
             self.section_pages = {}
 
         if name not in self.section_pages:
-            page = load_pages(name, self.back_to_main_menu)
+            # 👇 Updated this line:
+            page = load_pages(name, back_callback=self.back_to_main_menu, main_window=self)
             self.section_pages[name] = page
             self.stack.addWidget(page)
 
         self.stack.setCurrentWidget(self.section_pages[name])
         self.main_footer.hide()
         self.section_footer.show()
+
 
 
     def back_to_main_menu(self):

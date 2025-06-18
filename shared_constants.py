@@ -1,2 +1,2 @@
-DIFFICULTY_LEVELS = ["Easy", "Medium", "Moderate", "Hard", "Very Hard"]
-LANGUAGES = ["English", "Hindi", "Kannada", "Telugu"]
+DIFFICULTY_LEVELS = ["Very Easy", "Easy","Medium","Hard","Very Hard"]
+LANGUAGES = ["English", "हिंदी", "മലയാളം", "தமிழ்", "عربي"]

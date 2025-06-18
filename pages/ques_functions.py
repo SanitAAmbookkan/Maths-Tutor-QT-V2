@@ -8,17 +8,19 @@ from pages.shared_ui import (
 from question.loader import get_questions
 import os, shutil
 import pandas as pd
+from pages.settings_ui import create_settings_button
+
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog
 
 def load_pages(section_name, back_callback, main_window=None):
     page = create_colored_widget("#e0f7fa")
-
     widgets = []
+
 
     # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
         widgets.append(create_label("Choose an Operation", font_size=20))
-        for sub in ["Addition", "Subtraction", "Multiplication", "Division","Remainder","Percentage"]:
+        for sub in ["Addition", "Subtraction", "Multiplication", "Division", "Remainder", "Percentage"]:
             widgets.append(
                 create_menu_button(
                     sub,
@@ -39,6 +41,7 @@ def load_pages(section_name, back_callback, main_window=None):
     page.setLayout(create_vertical_layout(widgets))
     print(f"[QUESTION SHOWN] {questions}")
     return page
+
 
 
 def upload_excel_with_code(parent_widget, access_code="teacher123", dest_folder="question"):

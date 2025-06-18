@@ -1,8 +1,8 @@
-import sys, os
+import sys, os,shutil
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout
+    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox
 )
 from PyQt5.QtCore import Qt
 from pages.ques_functions import load_pages # ← your new function
@@ -101,13 +101,18 @@ class MainWindow(QMainWindow):
  
     def create_buttons(self):
         button_grid = QGridLayout()
-        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
+        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations", "Upload"]
  
         for i, name in enumerate(sections):
             button = QPushButton(name)
             button.setFixedSize(150, 40)
             button.setProperty("class", "menu-button")
-            button.clicked.connect(lambda checked, n=name: self.load_section(n))
+
+            if name == "Upload":
+                button.clicked.connect(self.upload_excel_with_code)
+            else:
+                button.clicked.connect(lambda checked, n=name: self.load_section(n))
+
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
  
@@ -119,6 +124,7 @@ class MainWindow(QMainWindow):
 
         row, col = divmod(len(sections), 3)
         button_grid.addWidget(settings_button, row, col)
+
 
         return button_grid
     def open_settings(self):
@@ -185,8 +191,35 @@ class MainWindow(QMainWindow):
             if widget:
                 widget.setParent(None)
 
- 
- 
+    
+    def upload_excel_with_code(self):
+        code, ok = QInputDialog.getText(self, "Access Code", "Enter Teacher Code:")
+        if not ok or code != "teacher123":
+            QMessageBox.critical(self, "Access Denied", "Incorrect code.")
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select Excel File", "", "Excel Files (*.xlsx)")
+        if not file_path:
+            return
+
+        try:
+            # Simple validation using pandas
+            import pandas as pd
+            df = pd.read_excel(file_path)
+
+            required = {"type", "input", "output"}  # Based on processor.py expectations
+            if not required.issubset(df.columns):
+                QMessageBox.critical(self, "Invalid File", "Excel must have columns: type, input, output")
+                return
+
+            # Save the file (overwrite old one)
+            dest = os.path.join(os.getcwd(), "question", "question.xlsx")
+            shutil.copyfile(file_path, dest)
+            QMessageBox.information(self, "Success", "Questions uploaded successfully!")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to upload: {e}")
+
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)
         if os.path.exists(path):

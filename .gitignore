@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env/
+.venv/
+venv/
+
+# System/IDE files
+.DS_Store       (Mac)
+.idea/          (PyCharm)
+.vscode/        (VS Code)

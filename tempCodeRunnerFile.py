@@ -1,4 +1,4 @@
-    def upload_excel_with_code(self):
+def upload_excel_with_code(self):
         code, ok = QInputDialog.getText(self, "Access Code", "Enter Teacher Code:")
         if not ok or code != "teacher123":
             QMessageBox.critical(self, "Access Denied", "Incorrect code.")

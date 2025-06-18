@@ -2,7 +2,7 @@ import sys, os,shutil
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox
+    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox,
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QSizePolicy #imported to resize button
@@ -97,16 +97,37 @@ class MainWindow(QMainWindow):
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
         menu_layout.addLayout(self.create_buttons())
+        
+        menu_layout.addStretch()
+        # Bottom-left audio toggle
+        bottom_layout = QHBoxLayout()
+        bottom_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.audio_button = QPushButton("🔊")
+        self.audio_button.setObjectName("audio-button")
+        self.audio_button.setFixedSize(50, 50)
+        self.audio_button.setToolTip("Toggle Mute/Unmute")
+        self.audio_button.clicked.connect(self.toggle_audio)
+
+        bottom_layout.addWidget(self.audio_button, alignment=Qt.AlignLeft)
+        bottom_layout.addStretch()
+
+        menu_layout.addLayout(bottom_layout)
 
         self.menu_widget.setLayout(menu_layout)
         self.main_layout.addWidget(self.menu_widget)
+        
+    def toggle_audio(self):
+      current = self.audio_button.text()
+      self.audio_button.setText("🔇" if current == "🔊" else "🔊")
+      print("Muted" if current == "🔊" else "Unmuted")
+
 
     def create_buttons(self):
         button_grid = QGridLayout()
         button_grid.setSpacing(10)
         button_grid.setContentsMargins(10, 10, 10, 10)
 
-        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations", "Upload"]
 
         for i, name in enumerate(sections):
@@ -144,8 +165,7 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(page)
 
-
-
+        
 
     def back_to_main_menu(self):
         # Remove current section widget (not the menu itself)
@@ -190,6 +210,7 @@ class MainWindow(QMainWindow):
         if os.path.exists(path):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
+        
 
 
 if __name__ == "__main__":

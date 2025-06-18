@@ -8,7 +8,6 @@ from pages.shared_ui import (
 from question.loader import get_questions
 import os, shutil
 import pandas as pd
-from pages.settings_ui import create_settings_button
 
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog
 

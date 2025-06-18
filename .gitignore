@@ -1,7 +1,7 @@
-# Python
+@"
+# Python cache
 __pycache__/
 *.py[cod]
-*$py.class
 *.pyc
 *.pyo
 *.pyd
@@ -10,8 +10,4 @@ __pycache__/
 .env/
 .venv/
 venv/
-
-# IDE/System
-.DS_Store
-.vscode/
-.idea/
+"@ | Out-File -FilePath .gitignore -Encoding utf8

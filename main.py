@@ -4,10 +4,12 @@ from PyQt5.QtWidgets import (
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
     QWidget, QGridLayout
 )
-from PyQt5.QtCore import Qt
-from pages.ques_functions import load_pages # ← your new function
+from PyQt5.QtCore import QTranslator
+from PyQt5.QtCore import Qt, QCoreApplication
+from pages.ques_functions import load_pages  # your function to load section pages
+def _(text):
+    return QCoreApplication.translate("", text)
 
-from PyQt5.QtCore import QCoreApplication
 _ = QCoreApplication.translate
 
 class RootWindow(QDialog):
@@ -20,7 +22,6 @@ class RootWindow(QDialog):
 
     def init_ui(self):
         title_label = QLabel("Welcome to Maths Tutor!")
-
         title_label.setProperty("class", "title")
 
         language_label = QLabel("Select your preferred language:")
@@ -71,7 +72,7 @@ class RootWindow(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self, language="English"):
         super().__init__()
-        self.setWindowTitle(_("Maths Tutor - {0}").format(language))
+        self.setWindowTitle(_("MainWindow", "Maths Tutor - {0}").format(language))
         self.resize(900, 600)
         self.language = language
         self.init_ui()
@@ -86,11 +87,11 @@ class MainWindow(QMainWindow):
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
 
-        title = QLabel(_("Welcome to Maths Tutor!"))
+        title = QLabel(_("MainWindow", "Welcome to Maths Tutor!"))
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
 
-        subtitle = QLabel(_("Ready to learn in {0}!").format(self.language))
+        subtitle = QLabel(_("MainWindow", "Ready to learn in {0}!").format(self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
 
@@ -107,7 +108,7 @@ class MainWindow(QMainWindow):
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
 
         for i, name in enumerate(sections):
-            button = QPushButton(_(name))
+            button = QPushButton(name)    
             button.setFixedSize(150, 40)
             button.setProperty("class", "menu-button")
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
@@ -119,12 +120,10 @@ class MainWindow(QMainWindow):
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
 
-        self.menu_widget.hide()  # Just hide, don’t delete
+        self.menu_widget.hide()
 
-        # 🧠 Use load_pages for everything, including Operations
         page = load_pages(name, self.back_to_main_menu, self)
 
-        # 🧹 Remove previously loaded section (if any)
         if self.main_layout.count() > 1:
             old_page = self.main_layout.takeAt(1)
             if old_page and old_page.widget():
@@ -132,19 +131,13 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(page)
 
-
-
-
     def back_to_main_menu(self):
-        # Remove current section widget (not the menu itself)
         if self.main_layout.count() > 1:
             old_page = self.main_layout.takeAt(1)
             if old_page and old_page.widget():
                 old_page.widget().deleteLater()
 
         self.menu_widget.show()
-
-
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)
@@ -155,13 +148,40 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    # Load base style
     style_file = os.path.join("styles", "app.qss")
     if os.path.exists(style_file):
         with open(style_file, "r") as f:
             app.setStyleSheet(f.read())
 
+    # Show language selection dialog
     dialog = RootWindow()
     if dialog.exec_() == QDialog.Accepted:
-        window = MainWindow(language=dialog.language_combo.currentText())
+        chosen_language = dialog.language_combo.currentText()
+
+        # Map chosen language name to language code used in .qm filenames
+        lang_map = {
+            "English": "en",
+            "हिंदी": "hi",     
+            "മലയാളം": "mal",
+            "தமிழ்": "ta",
+            "عربي": "ar",
+            "संस्कृत": "sa",
+        }
+
+        lang_code = lang_map.get(chosen_language, "en")  # default to English
+
+        # Load and install translator before creating MainWindow
+        translator = QTranslator()
+        translation_file = f"Localisation/{lang_code}.qm"
+        if translator.load(translation_file):
+            app.installTranslator(translator)
+            print(f"[INFO] Loaded translation for {chosen_language}")
+
+        # Now create and show main window
+        window = MainWindow(language=chosen_language)
         window.show()
         sys.exit(app.exec_())
+    else:
+        sys.exit(0)  # User cancelled language selection, exit app

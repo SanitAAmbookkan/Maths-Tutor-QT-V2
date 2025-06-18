@@ -1,6 +1,6 @@
 # pages/shared_ui.py
 
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout,QSizePolicy
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPalette, QColor
 
@@ -34,11 +34,16 @@ def create_menu_button(text: str, callback) -> QPushButton:
     button.setProperty("class", "menu-button")
     button.clicked.connect(callback)
     return button
+
 def create_vertical_layout(widgets: list) -> QVBoxLayout:
     layout = QVBoxLayout()
-    layout.setAlignment(Qt.AlignCenter)
+    layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+  #  layout.setContentsMargins(20, 20, 20, 20) 
+  #  layout.setSpacing(10)
     for widget in widgets:
-        layout.addWidget(widget)
+        #widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        layout.addWidget(widget, alignment=Qt.AlignHCenter)
+    #layout.addStretch() #new line
     return layout
 
 def create_back_button(callback) -> QPushButton:

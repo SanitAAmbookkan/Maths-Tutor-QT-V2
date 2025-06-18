@@ -1,12 +1,14 @@
-import sys, os
+import sys, os,shutil
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout
+    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox
 )
 from PyQt5.QtWidgets import QStackedWidget, QSizePolicy
 from PyQt5.QtCore import Qt
-from pages.ques_functions import load_pages  # ← your new function
+from pages.shared_ui import create_footer_buttons 
+from tempCodeRunnerFile import upload_excel_with_code
+from pages.ques_functions import load_pages # ← your new function
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -103,38 +105,30 @@ class MainWindow(QMainWindow):
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
-      # menu_layout.addLayout(self.create_buttons())
-          # Wrap the grid in a widget with spacing
-      #  button_widget = QWidget()
-     #   button_layout = QVBoxLayout()
-        #button_layout.addLayout(self.create_buttons())
-      #  button_layout.addWidget(self.create_buttons())  # ✅ CORRECT
-
-      #  button_layout.addStretch()
-     #   button_widget.setLayout(button_layout)
-       # menu_layout.addWidget(button_widget)
-
-        menu_layout.addLayout(self.create_buttons())  # ✅ Now adding layout directly
-
-
+     
+        menu_layout.addLayout(self.create_buttons())  
+        
         self.menu_widget.setLayout(menu_layout)
-       #self.main_layout.addWidget(self.menu_widget) NEW THINGS:-
+      
         self.stack = QStackedWidget()
         self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.stack.addWidget(self.menu_widget)
+
         self.main_layout.addWidget(self.stack)
 
-      #  self.main_layout.addStretch() #new
-        footer = self.create_footer_buttons()
-        footer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.main_layout.addWidget(footer)
-        #self.main_layout.addWidget(self.create_footer_buttons())   new
+        self.main_footer = self.create_main_footer_buttons()
+        self.section_footer = self.create_section_footer()
+        self.main_layout.addWidget(self.main_footer)
+        self.main_layout.addWidget(self.section_footer)
+        self.section_footer.hide()  # Hide section footer initially
+
+        
 
     def create_buttons(self):
         button_grid = QGridLayout()
         button_grid.setSpacing(10)  # Less vertical & horizontal spacing
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
-
+        
         for i, name in enumerate(sections):
             button = QPushButton(name)
             button.setFixedSize(150, 40)
@@ -142,37 +136,22 @@ class MainWindow(QMainWindow):
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
-        return button_grid
+            
+        return button_grid 
 
-            # Create a wrapper widget with fixed height to avoid being pushed off
-  #     wrapper = QWidget()
-        #wrapper.setLayout(button_grid)
-       # wrapper.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
-       # return wrapper
-
-      # return button_grid
-    def create_footer_buttons(self):
-        footer_widget = QWidget()
-        footer_layout = QHBoxLayout()
-        footer_layout.setContentsMargins(10, 10, 10, 10)
-
-        # Spacer to push everything to the right
-        footer_layout.addStretch()
-
-        # Buttons added after stretch = they go to the right
-        button_names = ["Upload", "Help", "About", "Settings"]
-        for name in button_names:
-            button = QPushButton(name)
-            button.setFixedSize(90, 30)
-            button.setProperty("class", "footer-button")
-            footer_layout.addWidget(button)
-
-        footer_widget.setLayout(footer_layout)
-        return footer_widget
-
+    def create_main_footer_buttons(self):
+        return create_footer_buttons(
+            ["Upload", "Help", "About", "Settings"],
+            callbacks={"Upload": self.handle_upload}
+        )
     
+    def create_section_footer(self):
+        return create_footer_buttons(["Help", "About", "Settings"])
+
+
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
+
         if not hasattr(self, 'section_pages'):
             self.section_pages = {}
 
@@ -182,17 +161,25 @@ class MainWindow(QMainWindow):
             self.stack.addWidget(page)
 
         self.stack.setCurrentWidget(self.section_pages[name])
+        self.main_footer.hide()
+        self.section_footer.show()
 
 
     def back_to_main_menu(self):
         self.stack.setCurrentWidget(self.menu_widget)
+        self.menu_widget.show()
+        self.section_footer.hide()
+        self.main_footer.show()
+
+    
+    def handle_upload(self):
+        upload_excel_with_code(self)
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)
         if os.path.exists(path):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

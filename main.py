@@ -6,9 +6,11 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtWidgets import QStackedWidget, QSizePolicy
 from PyQt5.QtCore import Qt
+
+
+
 from pages.shared_ui import create_footer_buttons 
-from tempCodeRunnerFile import upload_excel_with_code
-from pages.ques_functions import load_pages # ← your new function
+from pages.ques_functions import load_pages, upload_excel_with_code  # ← your new function
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -142,12 +144,29 @@ class MainWindow(QMainWindow):
     def create_main_footer_buttons(self):
         return create_footer_buttons(
             ["Upload", "Help", "About", "Settings"],
-            callbacks={"Upload": self.handle_upload}
+            callbacks={
+                "Upload": self.handle_upload,
+                "Settings":self.handle_settings
+                }
         )
     
     def create_section_footer(self):
         return create_footer_buttons(["Help", "About", "Settings"])
 
+    def handle_settings(self):
+        from settings_dialog import SettingsDialog
+        self.current_difficulty = 1 
+
+        dialog = SettingsDialog(
+            self,
+            initial_difficulty=self.current_difficulty,
+            current_language=self.language
+        )
+
+        if dialog.exec_() == QDialog.Accepted:
+            self.current_difficulty = dialog.get_difficulty_index()
+            self.language = dialog.get_selected_language()
+            self.setWindowTitle(f"Maths Tutor - {self.language}")
 
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
@@ -174,6 +193,7 @@ class MainWindow(QMainWindow):
     
     def handle_upload(self):
         upload_excel_with_code(self)
+   
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)

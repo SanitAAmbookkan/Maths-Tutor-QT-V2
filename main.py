@@ -1,12 +1,13 @@
-import sys, os
+import sys, os,shutil
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout
+    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QSizePolicy #imported to resize button
 from pages.ques_functions import load_pages  # ← your new function
+from pages.ques_functions import load_pages # ← your new function
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -106,6 +107,7 @@ class MainWindow(QMainWindow):
         button_grid.setContentsMargins(10, 10, 10, 10)
 
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
+        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations", "Upload"]
 
         for i, name in enumerate(sections):
             button = QPushButton(name)
@@ -123,23 +125,65 @@ class MainWindow(QMainWindow):
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
 
+
         return button_grid
 
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
-        for i in reversed(range(self.main_layout.count())):
-            widget = self.main_layout.itemAt(i).widget()
-            if widget:
-                widget.setParent(None)
-        page = load_pages(name, self.back_to_main_menu)  # ← Unified page with questions
+
+        self.menu_widget.hide()  # Just hide, don’t delete
+
+        # 🧠 Use load_pages for everything, including Operations
+        page = load_pages(name, self.back_to_main_menu, self)
+
+        # 🧹 Remove previously loaded section (if any)
+        if self.main_layout.count() > 1:
+            old_page = self.main_layout.takeAt(1)
+            if old_page and old_page.widget():
+                old_page.widget().deleteLater()
+
         self.main_layout.addWidget(page)
 
+
+
+
     def back_to_main_menu(self):
-        for i in reversed(range(self.main_layout.count())):
-            widget = self.main_layout.itemAt(i).widget()
-            if widget:
-                widget.setParent(None)
-        self.main_layout.addWidget(self.menu_widget)
+        # Remove current section widget (not the menu itself)
+        if self.main_layout.count() > 1:
+            old_page = self.main_layout.takeAt(1)
+            if old_page and old_page.widget():
+                old_page.widget().deleteLater()
+
+        self.menu_widget.show()
+
+    
+    def upload_excel_with_code(self):
+        code, ok = QInputDialog.getText(self, "Access Code", "Enter Teacher Code:")
+        if not ok or code != "teacher123":
+            QMessageBox.critical(self, "Access Denied", "Incorrect code.")
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select Excel File", "", "Excel Files (*.xlsx)")
+        if not file_path:
+            return
+
+        try:
+            # Simple validation using pandas
+            import pandas as pd
+            df = pd.read_excel(file_path)
+
+            required = {"type", "input", "output"}  # Based on processor.py expectations
+            if not required.issubset(df.columns):
+                QMessageBox.critical(self, "Invalid File", "Excel must have columns: type, input, output")
+                return
+
+            # Save the file (overwrite old one)
+            dest = os.path.join(os.getcwd(), "question", "question.xlsx")
+            shutil.copyfile(file_path, dest)
+            QMessageBox.information(self, "Success", "Questions uploaded successfully!")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to upload: {e}")
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)

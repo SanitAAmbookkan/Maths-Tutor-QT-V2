@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
     QWidget, QGridLayout
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QSizePolicy #imported to resize button
 from pages.ques_functions import load_pages  # ← your new function
 
 class RootWindow(QDialog):
@@ -29,7 +30,7 @@ class RootWindow(QDialog):
 
 
         self.remember_check = QCheckBox("Remember my selection")
-        self.remember_check.setChecked(True)
+        self.remember_check.setChecked(False)
 
         self.cancel_button = QPushButton("Cancel")
         self.ok_button = QPushButton("Continue")
@@ -101,13 +102,24 @@ class MainWindow(QMainWindow):
 
     def create_buttons(self):
         button_grid = QGridLayout()
+        button_grid.setSpacing(10)
+        button_grid.setContentsMargins(10, 10, 10, 10)
+
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
 
         for i, name in enumerate(sections):
             button = QPushButton(name)
-            button.setFixedSize(150, 40)
+
+            # Set a good preferred base size
+            button.setMinimumSize(160, 50)
+            button.setMaximumSize(220, 60)  # Optional: Prevent growing too big
+
+             # Use Preferred policy to allow controlled resizing
+            button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
             button.setProperty("class", "menu-button")
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
+
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
 

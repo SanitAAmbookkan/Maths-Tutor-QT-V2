@@ -8,7 +8,7 @@ QMainWindow {
     background: rgba(255, 255, 255, 0.85);
     border-radius: 16px;
     margin: 20px;
-    border: 1px solid rgba(203, 213, 224, 0.5);
+    border: 1px solid rgba(1000, 213, 224, 0.5);
 }
 
 .main-title {

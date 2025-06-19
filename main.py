@@ -28,13 +28,20 @@ class RootWindow(QDialog):
         self.language_combo = QComboBox()
         self.language_combo.addItems(languages)
         self.language_combo.setProperty("class", "combo-box")
+        
 
 
         self.remember_check = QCheckBox("Remember my selection")
         self.remember_check.setChecked(False)
 
-        self.cancel_button = QPushButton("Cancel")
         self.ok_button = QPushButton("Continue")
+        self.ok_button.setDefault(True)
+        self.ok_button.setAutoDefault(True)
+
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.setAutoDefault(False)
+        self.cancel_button.setShortcut(Qt.Key_Escape)
+
 
         layout = QVBoxLayout()
         layout.addWidget(title_label)
@@ -75,15 +82,37 @@ class MainWindow(QMainWindow):
         self.language = language
         self.init_ui()
         self.load_style("main_window.qss")
+        self.current_theme = "light"  # Initial theme
+
 
     def init_ui(self):
         self.central_widget = QWidget()
+        self.central_widget.setProperty("class", "central-widget")
+        self.central_widget.setProperty("theme", "light")
         self.main_layout = QVBoxLayout(self.central_widget)
         self.setCentralWidget(self.central_widget)
 
+        # Track current theme
+        self.current_theme = "light"
+        
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
+    
+         # Top bar for theme toggle
+        top_bar = QHBoxLayout()
+        top_bar.setContentsMargins(0, 0, 0, 0)
+
+         # Theme button (🌙 for light, ☀️ for dark)
+        self.theme_button = QPushButton("🌙")
+        self.theme_button.setFixedSize(40, 40)
+        self.theme_button.setToolTip("Toggle Light/Dark Theme")
+        self.theme_button.clicked.connect(self.toggle_theme)
+
+        top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
+        top_bar.addStretch()
+
+        menu_layout.addLayout(top_bar)
 
         title = QLabel("Welcome to Maths Tutor!")
         title.setAlignment(Qt.AlignCenter)
@@ -129,7 +158,8 @@ class MainWindow(QMainWindow):
         button_grid.setContentsMargins(10, 10, 10, 10)
 
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations", "Upload"]
-
+        self.menu_buttons = [] 
+        
         for i, name in enumerate(sections):
             button = QPushButton(name)
 
@@ -142,6 +172,8 @@ class MainWindow(QMainWindow):
 
             button.setProperty("class", "menu-button")
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
+
+            self.menu_buttons.append(button)
 
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
@@ -156,6 +188,11 @@ class MainWindow(QMainWindow):
 
         # 🧠 Use load_pages for everything, including Operations
         page = load_pages(name, self.back_to_main_menu, self)
+        
+        # ✅ Apply current theme to the newly loaded page
+        page.setProperty("theme", self.current_theme)
+        page.style().unpolish(page)
+        page.style().polish(page)
 
         # 🧹 Remove previously loaded section (if any)
         if self.main_layout.count() > 1:
@@ -211,6 +248,20 @@ class MainWindow(QMainWindow):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
         
+    
+    def toggle_theme(self):
+       # Toggle the theme
+       self.current_theme = "dark" if self.current_theme == "light" else "light"
+    
+       # Update theme property on central widget
+       self.central_widget.setProperty("theme", self.current_theme)
+    
+        # Refresh style
+       self.central_widget.style().unpolish(self.central_widget)
+       self.central_widget.style().polish(self.central_widget)
+
+        # Also update theme icon
+       self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from pages.ques_functions import load_pages # ← your new function
- 
+from question.loader import QuestionProcessor
+
 class RootWindow(QDialog):
     def __init__(self):
         super().__init__()
@@ -158,7 +159,10 @@ class MainWindow(QMainWindow):
         self.menu_widget.hide()  # Just hide, don’t delete
  
         # 🧠 Use load_pages for everything, including Operations
-        page = load_pages(name, self.back_to_main_menu, self.difficulty_index)
+        self.processor = QuestionProcessor(name, self.difficulty_index)
+        self.processor.process_file()
+        page = load_pages(name, self.back_to_main_menu, self.difficulty_index, self.processor)
+
  
         # 🧹 Remove previously loaded section (if any)
         if self.main_layout.count() > 1:
@@ -168,9 +172,7 @@ class MainWindow(QMainWindow):
  
         self.main_layout.addWidget(page)
  
- 
- 
- 
+    
     def back_to_main_menu(self):
         # Remove current section widget (not the menu itself)
         if self.main_layout.count() > 1:
@@ -193,8 +195,9 @@ class MainWindow(QMainWindow):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
  
- 
+   
 if __name__ == "__main__":
+
     app = QApplication(sys.argv)
     style_file = os.path.join("styles", "app.qss")
     if os.path.exists(style_file):

@@ -4,8 +4,11 @@ from PyQt5.QtWidgets import (
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
     QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox
 )
+from PyQt5.QtWidgets import QStackedWidget, QSizePolicy
 from PyQt5.QtCore import Qt
-from pages.ques_functions import load_pages # ← your new function
+
+from pages.shared_ui import create_footer_buttons 
+from pages.ques_functions import load_pages, upload_excel_with_code  # ← your new function
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -29,10 +32,13 @@ class RootWindow(QDialog):
 
 
         self.remember_check = QCheckBox("Remember my selection")
-        self.remember_check.setChecked(True)
+        self.remember_check.setChecked(False)
 
         self.cancel_button = QPushButton("Cancel")
         self.ok_button = QPushButton("Continue")
+
+        self.ok_button.setDefault(True) #default enter - continue
+        self.ok_button.setFocus()
 
         layout = QVBoxLayout()
         layout.addWidget(title_label)
@@ -70,19 +76,24 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle(f"Maths Tutor - {language}")
         self.resize(900, 600)
+        self.setMinimumSize(800, 550)  # Prevents squashing
+
         self.language = language
         self.init_ui()
         self.load_style("main_window.qss")
 
     def init_ui(self):
         self.central_widget = QWidget()
-        self.main_layout = QVBoxLayout(self.central_widget)
+        #self.main_layout = QVBoxLayout(self.central_widget)
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
 
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
-
+         
         title = QLabel("Welcome to Maths Tutor!")
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
@@ -94,94 +105,126 @@ class MainWindow(QMainWindow):
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
-        menu_layout.addLayout(self.create_buttons())
-
+     
+        menu_layout.addLayout(self.create_buttons())  
+        
         self.menu_widget.setLayout(menu_layout)
-        self.main_layout.addWidget(self.menu_widget)
+      
+        self.stack = QStackedWidget()
+        self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.stack.addWidget(self.menu_widget)
+
+        self.main_layout.addWidget(self.stack)
+
+        self.main_footer = self.create_main_footer_buttons()
+        self.section_footer = self.create_section_footer()
+        self.main_layout.addWidget(self.main_footer)
+        self.main_layout.addWidget(self.section_footer)
+        self.section_footer.hide()  # Hide section footer initially
+
+        
 
     def create_buttons(self):
         button_grid = QGridLayout()
-        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations", "Upload"]
-
+        button_grid.setSpacing(10)  # Less vertical & horizontal spacing
+        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
+        
         for i, name in enumerate(sections):
             button = QPushButton(name)
             button.setFixedSize(150, 40)
             button.setProperty("class", "menu-button")
-
-            if name == "Upload":
-                button.clicked.connect(self.upload_excel_with_code)
-            else:
-                button.clicked.connect(lambda checked, n=name: self.load_section(n))
-
+            button.clicked.connect(lambda checked, n=name: self.load_section(n))
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
+            
+        return button_grid 
 
+    def create_main_footer_buttons(self):
+        return create_footer_buttons(
+            ["Upload", "Help", "About", "Settings"],
+            callbacks={
+                "Upload": self.handle_upload,
+                "Settings":self.handle_settings
+                }
+        )
+    
+    def create_section_footer(self):
+        return create_footer_buttons(
+            ["Help", "About", "Settings"],
+             callbacks={
+            "Settings": self.handle_settings
+        }                         )
 
-        return button_grid
+    def handle_settings(self):
+        from settings_dialog import SettingsDialog
+
+        # Create and show the settings dialog
+        dialog = SettingsDialog(
+            parent=self,
+            initial_difficulty=getattr(self, "current_difficulty", 1),
+            current_language=self.language
+            
+            )
+
+        # If the user clicked OK
+        if dialog.exec_() == QDialog.Accepted:
+            # Update global difficulty and language
+            self.current_difficulty = dialog.get_difficulty_index()
+            self.language = dialog.get_selected_language()
+
+            # Update window title
+            self.setWindowTitle(f"Maths Tutor - {self.language}")
+
+            # Reload current section if not in main menu
+            current_widget = self.stack.currentWidget()
+            if current_widget != self.menu_widget:
+                for section_name, page in self.section_pages.items():
+                    if page == current_widget:
+                        self.section_pages.pop(section_name)
+                        new_page = load_pages(
+                            section_name,
+                            back_callback=self.back_to_main_menu,
+                            main_window=self
+                        )
+                        self.section_pages[section_name] = new_page
+                        self.stack.addWidget(new_page)
+                        self.stack.setCurrentWidget(new_page)
+                        break
 
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
 
-        self.menu_widget.hide()  # Just hide, don’t delete
+        if not hasattr(self, 'section_pages'):
+            self.section_pages = {}
 
-        # 🧠 Use load_pages for everything, including Operations
-        page = load_pages(name, self.back_to_main_menu, self)
+        if name not in self.section_pages:
+            # 👇 Updated this line:
+            page = load_pages(name, back_callback=self.back_to_main_menu, main_window=self)
+            self.section_pages[name] = page
+            self.stack.addWidget(page)
 
-        # 🧹 Remove previously loaded section (if any)
-        if self.main_layout.count() > 1:
-            old_page = self.main_layout.takeAt(1)
-            if old_page and old_page.widget():
-                old_page.widget().deleteLater()
-
-        self.main_layout.addWidget(page)
-
+        self.stack.setCurrentWidget(self.section_pages[name])
+        self.main_footer.hide()
+        self.section_footer.show()
 
 
 
     def back_to_main_menu(self):
-        # Remove current section widget (not the menu itself)
-        if self.main_layout.count() > 1:
-            old_page = self.main_layout.takeAt(1)
-            if old_page and old_page.widget():
-                old_page.widget().deleteLater()
-
+        self.stack.setCurrentWidget(self.menu_widget)
         self.menu_widget.show()
+        self.section_footer.hide()
+        self.main_footer.show()
 
     
-    def upload_excel_with_code(self):
-        code, ok = QInputDialog.getText(self, "Access Code", "Enter Teacher Code:")
-        if not ok or code != "teacher123":
-            QMessageBox.critical(self, "Access Denied", "Incorrect code.")
-            return
-
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Excel File", "", "Excel Files (*.xlsx)")
-        if not file_path:
-            return
-
-        try:
-            # Simple validation using pandas
-            import pandas as pd
-            df = pd.read_excel(file_path)
-
-            required = {"type", "input", "output"}  # Based on processor.py expectations
-            if not required.issubset(df.columns):
-                QMessageBox.critical(self, "Invalid File", "Excel must have columns: type, input, output")
-                return
-
-            # Save the file (overwrite old one)
-            dest = os.path.join(os.getcwd(), "question", "question.xlsx")
-            shutil.copyfile(file_path, dest)
-            QMessageBox.information(self, "Success", "Questions uploaded successfully!")
-
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to upload: {e}")
+    def handle_upload(self):
+        upload_excel_with_code(self)
+   
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)
         if os.path.exists(path):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

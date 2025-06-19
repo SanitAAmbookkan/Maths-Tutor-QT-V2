@@ -28,3 +28,44 @@ QPushButton[class="menu-button"] {
 QPushButton[class="menu-button"]:hover {
     background-color: #2980b9;
 }
+
+QPushButton[class="footer-button"] {
+    background-color: rgba(52, 152, 219, 0.15); /* soft blue */
+    color: #2c3e50;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 6px 20px;  /* ↑ added enough vertical padding */
+    min-height: 36px;   /* ↑ ensures room for text */
+    border: 1px solid #3498db;
+    border-radius: 6px;
+}
+
+QPushButton[class="footer-button"]:hover {
+    background-color: rgba(52, 152, 219, 0.25);
+    color: #1b4f72;
+}
+
+QPushButton[class="footer-button"]:pressed {
+    background-color: rgba(52, 152, 219, 0.35);
+    border: 1px solid #2471a3;
+}
+QPushButton[class="footer-button"] {
+    background-color: rgba(52, 152, 219, 0.15); /* soft blue */
+    color: #2c3e50;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 20px;  /* ↑ added enough vertical padding */
+    min-height: 30px;   /* ↑ ensures room for text */
+    border: 1px solid #3498db;
+    border-radius: 6px;
+}
+
+QPushButton[class="footer-button"]:hover {
+    background-color: rgba(52, 152, 219, 0.25);
+    color: #1b4f72;
+}
+
+QPushButton[class="footer-button"]:pressed {
+    background-color: rgba(52, 152, 219, 0.35);
+    border: 1px solid #2471a3;
+}

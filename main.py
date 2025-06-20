@@ -1,23 +1,16 @@
-import sys, os,shutil
+import sys, os, shutil
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox,
+    QWidget, QGridLayout, QInputDialog, QFileDialog, QMessageBox,
+    QSizePolicy,
 )
-<<<<<<< HEAD
-from PyQt5.QtCore import QTranslator
-from PyQt5.QtCore import Qt, QCoreApplication
-from pages.ques_functions import load_pages  # your function to load section pages
-def _(text):
-    return QCoreApplication.translate("", text)
+from PyQt5.QtCore import QTranslator, Qt, QCoreApplication, QTimer
+from pages.ques_functions import load_pages
+from Accessibility.accessibility import set_accessibility  # Accessibility support
 
-_ = QCoreApplication.translate
-=======
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSizePolicy #imported to resize button
-from pages.ques_functions import load_pages  # ← your new function
-from pages.ques_functions import load_pages # ← your new function
->>>>>>> main
+def tr(ctx, text):
+    return QCoreApplication.translate(ctx, text)
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -38,7 +31,6 @@ class RootWindow(QDialog):
         self.language_combo = QComboBox()
         self.language_combo.addItems(languages)
         self.language_combo.setProperty("class", "combo-box")
-        
 
         self.remember_check = QCheckBox("Remember my selection")
         self.remember_check.setChecked(False)
@@ -51,7 +43,6 @@ class RootWindow(QDialog):
         self.cancel_button.setAutoDefault(False)
         self.cancel_button.setShortcut(Qt.Key_Escape)
 
-
         layout = QVBoxLayout()
         layout.addWidget(title_label)
         layout.addSpacing(15)
@@ -60,6 +51,7 @@ class RootWindow(QDialog):
         layout.addWidget(self.remember_check)
         layout.addStretch()
         layout.addWidget(self.create_line())
+
         btns = QHBoxLayout()
         btns.addStretch()
         btns.addWidget(self.cancel_button)
@@ -82,17 +74,15 @@ class RootWindow(QDialog):
             with open(style_path, "r") as f:
                 self.setStyleSheet(f.read())
 
-
 class MainWindow(QMainWindow):
     def __init__(self, language="English"):
         super().__init__()
-        self.setWindowTitle(_("MainWindow", "Maths Tutor - {0}").format(language))
+        self.setWindowTitle(tr("MainWindow", "Maths Tutor - {0}").format(language))
         self.resize(900, 600)
         self.language = language
         self.init_ui()
         self.load_style("main_window.qss")
-        self.current_theme = "light"  # Initial theme
-
+        self.current_theme = "light"
 
     def init_ui(self):
         self.central_widget = QWidget()
@@ -101,21 +91,22 @@ class MainWindow(QMainWindow):
         self.main_layout = QVBoxLayout(self.central_widget)
         self.setCentralWidget(self.central_widget)
 
-        # Track current theme
         self.current_theme = "light"
-        
+
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
-    
-         # Top bar for theme toggle
+
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
 
-         # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
         self.theme_button.setFixedSize(40, 40)
-        self.theme_button.setToolTip("Toggle Light/Dark Theme")
+        self.theme_button.setToolTip(tr("MainWindow", "Toggle Light/Dark Theme"))
+        set_accessibility(self.theme_button,
+                          name_key="Theme Toggle Button",
+                          description_key="Button to toggle light or dark theme",
+                          context="MainWindow")
         self.theme_button.clicked.connect(self.toggle_theme)
 
         top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
@@ -123,28 +114,33 @@ class MainWindow(QMainWindow):
 
         menu_layout.addLayout(top_bar)
 
-        title = QLabel(_("MainWindow", "Welcome to Maths Tutor!"))
+        title = QLabel(tr("MainWindow", "Welcome to Maths Tutor!"))
+        title.setAccessibleName(tr("MainWindow", "Welcome to Maths Tutor!"))
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
 
-        subtitle = QLabel(_("MainWindow", "Ready to learn in {0}!").format(self.language))
+        subtitle = QLabel(tr("MainWindow", "Ready to learn in {0}!").format(self.language))
+        subtitle.setAccessibleName(tr("MainWindow", f"Ready to learn in {self.language}!"))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
-
+        
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
         menu_layout.addLayout(self.create_buttons())
-        
         menu_layout.addStretch()
-        # Bottom-left audio toggle
+
         bottom_layout = QHBoxLayout()
         bottom_layout.setContentsMargins(0, 0, 0, 0)
 
         self.audio_button = QPushButton("🔊")
         self.audio_button.setObjectName("audio-button")
         self.audio_button.setFixedSize(50, 50)
-        self.audio_button.setToolTip("Toggle Mute/Unmute")
+        self.audio_button.setToolTip(tr("MainWindow", "Toggle Mute/Unmute"))
+        set_accessibility(self.audio_button,
+                          name_key="Audio Toggle Button",
+                          description_key="Button to mute or unmute the audio",
+                          context="MainWindow")
         self.audio_button.clicked.connect(self.toggle_audio)
 
         bottom_layout.addWidget(self.audio_button, alignment=Qt.AlignLeft)
@@ -154,11 +150,29 @@ class MainWindow(QMainWindow):
 
         self.menu_widget.setLayout(menu_layout)
         self.main_layout.addWidget(self.menu_widget)
-        
+
+        # Add live region label for screen reader announcements
+        self.a11y_live_label = QLabel("")
+        self.a11y_live_label.setVisible(False)
+        self.a11y_live_label.setAccessibleName("ScreenReaderAnnounce")
+        self.main_layout.addWidget(self.a11y_live_label)
+
     def toggle_audio(self):
-      current = self.audio_button.text()
-      self.audio_button.setText("🔇" if current == "🔊" else "🔊")
-      print("Muted" if current == "🔊" else "Unmuted")
+        current = self.audio_button.text()
+        new_text = "🔇" if current == "🔊" else "🔊"
+        self.audio_button.setText(new_text)
+        announcement = tr("MainWindow", "Muted") if new_text == "🔇" else tr("MainWindow", "Unmuted")
+        
+        # Update button's accessible name/description
+        self.audio_button.setAccessibleName(announcement)
+        self.audio_button.setAccessibleDescription(announcement)
+        
+        # Update live label (must be visible to accessibility, even if off-screen)
+        self.a11y_live_label.setText("")  # Clear first
+        QTimer.singleShot(100, lambda: self.a11y_live_label.setText(announcement))
+        # Do not immediately clear the label; let it persist for a few seconds
+        QTimer.singleShot(3000, lambda: self.a11y_live_label.setText(""))
+
 
 
     def create_buttons(self):
@@ -166,44 +180,41 @@ class MainWindow(QMainWindow):
         button_grid.setSpacing(10)
         button_grid.setContentsMargins(10, 10, 10, 10)
 
-        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations", "Upload"]
+        sections = [
+            tr("MainWindow", "Story"),
+            tr("MainWindow", "Time"),
+            tr("MainWindow", "Currency"),
+            tr("MainWindow", "Distance"),
+            tr("MainWindow", "Bellring"),
+            tr("MainWindow", "Operations"),
+            tr("MainWindow", "Upload"),
+        ]
         self.menu_buttons = [] 
-        
+
         for i, name in enumerate(sections):
-<<<<<<< HEAD
-            button = QPushButton(name)    
-            button.setFixedSize(150, 40)
-            button.setProperty("class", "menu-button")
-=======
             button = QPushButton(name)
->>>>>>> main
-
-            # Set a good preferred base size
             button.setMinimumSize(160, 50)
-            button.setMaximumSize(220, 60)  # Optional: Prevent growing too big
-
-             # Use Preferred policy to allow controlled resizing
+            button.setMaximumSize(220, 60)
             button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-
             button.setProperty("class", "menu-button")
-            button.clicked.connect(lambda checked, n=name: self.load_section(n))
 
+            set_accessibility(button,
+                              name_key=f"{name} Section Button",
+                              description_key=f"Button to open the {name} section",
+                              context="MainWindow")
+
+            button.clicked.connect(lambda checked, n=name: self.load_section(n))
             self.menu_buttons.append(button)
 
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
 
-
         return button_grid
 
     def load_section(self, name):
         print(f"[INFO] Loading section: {name}")
-
         self.menu_widget.hide()
-
         page = load_pages(name, self.back_to_main_menu, self)
-        
-        # ✅ Apply current theme to the newly loaded page
         page.setProperty("theme", self.current_theme)
         page.style().unpolish(page)
         page.style().polish(page)
@@ -215,11 +226,6 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(page)
 
-<<<<<<< HEAD
-=======
-        
-
->>>>>>> main
     def back_to_main_menu(self):
         if self.main_layout.count() > 1:
             old_page = self.main_layout.takeAt(1)
@@ -228,93 +234,80 @@ class MainWindow(QMainWindow):
 
         self.menu_widget.show()
 
-    
     def upload_excel_with_code(self):
-        code, ok = QInputDialog.getText(self, "Access Code", "Enter Teacher Code:")
+        code, ok = QInputDialog.getText(self, tr("MainWindow", "Access Code"), tr("MainWindow", "Enter Teacher Code:"))
         if not ok or code != "teacher123":
-            QMessageBox.critical(self, "Access Denied", "Incorrect code.")
+            QMessageBox.critical(self, tr("MainWindow", "Access Denied"), tr("MainWindow", "Incorrect code."))
             return
 
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Excel File", "", "Excel Files (*.xlsx)")
+        file_path, _ = QFileDialog.getOpenFileName(self, tr("MainWindow", "Select Excel File"), "", "Excel Files (*.xlsx)")
         if not file_path:
             return
 
         try:
-            # Simple validation using pandas
             import pandas as pd
             df = pd.read_excel(file_path)
-
-            required = {"type", "input", "output"}  # Based on processor.py expectations
+            required = {"type", "input", "output"}
             if not required.issubset(df.columns):
-                QMessageBox.critical(self, "Invalid File", "Excel must have columns: type, input, output")
+                QMessageBox.critical(self, tr("MainWindow", "Invalid File"), tr("MainWindow", "Excel must have columns: type, input, output"))
                 return
 
-            # Save the file (overwrite old one)
             dest = os.path.join(os.getcwd(), "question", "question.xlsx")
             shutil.copyfile(file_path, dest)
-            QMessageBox.information(self, "Success", "Questions uploaded successfully!")
+            QMessageBox.information(self, tr("MainWindow", "Success"), tr("MainWindow", "Questions uploaded successfully!"))
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to upload: {e}")
+            QMessageBox.critical(self, tr("MainWindow", "Error"), tr("MainWindow", f"Failed to upload: {e}"))
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)
         if os.path.exists(path):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
-        
-    
+
     def toggle_theme(self):
-       # Toggle the theme
-       self.current_theme = "dark" if self.current_theme == "light" else "light"
-    
-       # Update theme property on central widget
-       self.central_widget.setProperty("theme", self.current_theme)
-    
-        # Refresh style
-       self.central_widget.style().unpolish(self.central_widget)
-       self.central_widget.style().polish(self.central_widget)
+        self.current_theme = "dark" if self.current_theme == "light" else "light"
+        self.central_widget.setProperty("theme", self.current_theme)
+        self.central_widget.style().unpolish(self.central_widget)
+        self.central_widget.style().polish(self.central_widget)
+        self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
 
-        # Also update theme icon
-       self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
-
+        announcement = tr("MainWindow", "Dark mode activated") if self.current_theme == "dark" else tr("MainWindow", "Light mode activated")
+        self.a11y_live_label.setText("")
+        QTimer.singleShot(100, lambda: self.a11y_live_label.setText(announcement))
+        QTimer.singleShot(100, lambda: self.a11y_live_label.setAccessibleDescription(announcement))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    # Load base style
     style_file = os.path.join("styles", "app.qss")
     if os.path.exists(style_file):
         with open(style_file, "r") as f:
             app.setStyleSheet(f.read())
 
-    # Show language selection dialog
     dialog = RootWindow()
     if dialog.exec_() == QDialog.Accepted:
         chosen_language = dialog.language_combo.currentText()
 
-        # Map chosen language name to language code used in .qm filenames
         lang_map = {
             "English": "en",
-            "हिंदी": "hi",     
+            "हिंदी": "hi",
             "മലയാളം": "mal",
             "தமிழ்": "ta",
             "عربي": "ar",
             "संस्कृत": "sa",
         }
 
-        lang_code = lang_map.get(chosen_language, "en")  # default to English
+        lang_code = lang_map.get(chosen_language, "en")
 
-        # Load and install translator before creating MainWindow
         translator = QTranslator()
         translation_file = f"Localisation/{lang_code}.qm"
         if translator.load(translation_file):
             app.installTranslator(translator)
             print(f"[INFO] Loaded translation for {chosen_language}")
 
-        # Now create and show main window
         window = MainWindow(language=chosen_language)
         window.show()
         sys.exit(app.exec_())
     else:
-        sys.exit(0)  # User cancelled language selection, exit app
+        sys.exit(0)

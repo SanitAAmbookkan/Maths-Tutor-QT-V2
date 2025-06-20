@@ -3,7 +3,10 @@ from pages.shared_ui import (
     create_label,
     create_vertical_layout,
     create_back_button,
-    create_menu_button
+    create_menu_button,
+    create_answer_input,
+    wrap_center,
+    
 )
 from question.loader import get_questions
 
@@ -31,8 +34,11 @@ def load_pages(section_name, back_callback, main_window=None):
     questions = get_questions(section_name)
     for q in questions:
         widgets.append(create_label(q, font_size=14, bold=False))
+        widgets.append(wrap_center(create_answer_input()))  # 👈 Call your custom input function here
+
     widgets.append(create_back_button(back_callback))
 
     page.setLayout(create_vertical_layout(widgets))
     print(f"[QUESTION SHOWN] {questions}")
     return page
+

@@ -2,8 +2,9 @@ import sys, os,shutil
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox
+    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox,
 )
+<<<<<<< HEAD
 from PyQt5.QtCore import QTranslator
 from PyQt5.QtCore import Qt, QCoreApplication
 from pages.ques_functions import load_pages  # your function to load section pages
@@ -11,6 +12,12 @@ def _(text):
     return QCoreApplication.translate("", text)
 
 _ = QCoreApplication.translate
+=======
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QSizePolicy #imported to resize button
+from pages.ques_functions import load_pages  # ← your new function
+from pages.ques_functions import load_pages # ← your new function
+>>>>>>> main
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -31,12 +38,19 @@ class RootWindow(QDialog):
         self.language_combo = QComboBox()
         self.language_combo.addItems(languages)
         self.language_combo.setProperty("class", "combo-box")
+        
 
         self.remember_check = QCheckBox("Remember my selection")
-        self.remember_check.setChecked(True)
+        self.remember_check.setChecked(False)
+
+        self.ok_button = QPushButton("Continue")
+        self.ok_button.setDefault(True)
+        self.ok_button.setAutoDefault(True)
 
         self.cancel_button = QPushButton("Cancel")
-        self.ok_button = QPushButton("Continue")
+        self.cancel_button.setAutoDefault(False)
+        self.cancel_button.setShortcut(Qt.Key_Escape)
+
 
         layout = QVBoxLayout()
         layout.addWidget(title_label)
@@ -77,15 +91,37 @@ class MainWindow(QMainWindow):
         self.language = language
         self.init_ui()
         self.load_style("main_window.qss")
+        self.current_theme = "light"  # Initial theme
+
 
     def init_ui(self):
         self.central_widget = QWidget()
+        self.central_widget.setProperty("class", "central-widget")
+        self.central_widget.setProperty("theme", "light")
         self.main_layout = QVBoxLayout(self.central_widget)
         self.setCentralWidget(self.central_widget)
 
+        # Track current theme
+        self.current_theme = "light"
+        
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
+    
+         # Top bar for theme toggle
+        top_bar = QHBoxLayout()
+        top_bar.setContentsMargins(0, 0, 0, 0)
+
+         # Theme button (🌙 for light, ☀️ for dark)
+        self.theme_button = QPushButton("🌙")
+        self.theme_button.setFixedSize(40, 40)
+        self.theme_button.setToolTip("Toggle Light/Dark Theme")
+        self.theme_button.clicked.connect(self.toggle_theme)
+
+        top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
+        top_bar.addStretch()
+
+        menu_layout.addLayout(top_bar)
 
         title = QLabel(_("MainWindow", "Welcome to Maths Tutor!"))
         title.setAlignment(Qt.AlignCenter)
@@ -99,23 +135,60 @@ class MainWindow(QMainWindow):
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
         menu_layout.addLayout(self.create_buttons())
+        
+        menu_layout.addStretch()
+        # Bottom-left audio toggle
+        bottom_layout = QHBoxLayout()
+        bottom_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.audio_button = QPushButton("🔊")
+        self.audio_button.setObjectName("audio-button")
+        self.audio_button.setFixedSize(50, 50)
+        self.audio_button.setToolTip("Toggle Mute/Unmute")
+        self.audio_button.clicked.connect(self.toggle_audio)
+
+        bottom_layout.addWidget(self.audio_button, alignment=Qt.AlignLeft)
+        bottom_layout.addStretch()
+
+        menu_layout.addLayout(bottom_layout)
 
         self.menu_widget.setLayout(menu_layout)
         self.main_layout.addWidget(self.menu_widget)
+        
+    def toggle_audio(self):
+      current = self.audio_button.text()
+      self.audio_button.setText("🔇" if current == "🔊" else "🔊")
+      print("Muted" if current == "🔊" else "Unmuted")
+
 
     def create_buttons(self):
         button_grid = QGridLayout()
-        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations", "Upload"]
+        button_grid.setSpacing(10)
+        button_grid.setContentsMargins(10, 10, 10, 10)
 
+        sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations", "Upload"]
+        self.menu_buttons = [] 
+        
         for i, name in enumerate(sections):
+<<<<<<< HEAD
             button = QPushButton(name)    
             button.setFixedSize(150, 40)
             button.setProperty("class", "menu-button")
+=======
+            button = QPushButton(name)
+>>>>>>> main
 
-            if name == "Upload":
-                button.clicked.connect(self.upload_excel_with_code)
-            else:
-                button.clicked.connect(lambda checked, n=name: self.load_section(n))
+            # Set a good preferred base size
+            button.setMinimumSize(160, 50)
+            button.setMaximumSize(220, 60)  # Optional: Prevent growing too big
+
+             # Use Preferred policy to allow controlled resizing
+            button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+            button.setProperty("class", "menu-button")
+            button.clicked.connect(lambda checked, n=name: self.load_section(n))
+
+            self.menu_buttons.append(button)
 
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
@@ -129,6 +202,11 @@ class MainWindow(QMainWindow):
         self.menu_widget.hide()
 
         page = load_pages(name, self.back_to_main_menu, self)
+        
+        # ✅ Apply current theme to the newly loaded page
+        page.setProperty("theme", self.current_theme)
+        page.style().unpolish(page)
+        page.style().polish(page)
 
         if self.main_layout.count() > 1:
             old_page = self.main_layout.takeAt(1)
@@ -137,6 +215,11 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(page)
 
+<<<<<<< HEAD
+=======
+        
+
+>>>>>>> main
     def back_to_main_menu(self):
         if self.main_layout.count() > 1:
             old_page = self.main_layout.takeAt(1)
@@ -179,6 +262,21 @@ class MainWindow(QMainWindow):
         if os.path.exists(path):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
+        
+    
+    def toggle_theme(self):
+       # Toggle the theme
+       self.current_theme = "dark" if self.current_theme == "light" else "light"
+    
+       # Update theme property on central widget
+       self.central_widget.setProperty("theme", self.current_theme)
+    
+        # Refresh style
+       self.central_widget.style().unpolish(self.central_widget)
+       self.central_widget.style().polish(self.central_widget)
+
+        # Also update theme icon
+       self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
 
 
 if __name__ == "__main__":

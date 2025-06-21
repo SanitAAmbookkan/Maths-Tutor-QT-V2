@@ -1,12 +1,11 @@
-import sys, os,shutil
+import sys, os
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout,QStackedWidget, QSizePolicy,QInputDialog, QFileDialog, QMessageBox
+    QWidget, QGridLayout,QStackedWidget, QSizePolicy
 )
 from PyQt5.QtCore import Qt
-
-from pages.shared_ui import create_footer_buttons
+from pages.shared_ui import create_footer_buttons, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel_with_code  # ← your new function
 
 class RootWindow(QDialog):
@@ -75,7 +74,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle(f"Maths Tutor - {language}")
         self.resize(900, 600)
-        self.setMinimumSize(800, 550)  # Prevents squashing
+        self.setMinimumSize(800, 550) 
 
         self.language = language
         self.init_ui()
@@ -118,13 +117,13 @@ class MainWindow(QMainWindow):
         self.section_footer = self.create_section_footer()
         self.main_layout.addWidget(self.main_footer)
         self.main_layout.addWidget(self.section_footer)
-        self.section_footer.hide()  # Hide section footer initially
+        self.section_footer.hide()  
 
         
 
     def create_buttons(self):
         button_grid = QGridLayout()
-        button_grid.setSpacing(10)  # Less vertical & horizontal spacing
+        button_grid.setSpacing(10)  
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
         
         for i, name in enumerate(sections):
@@ -154,7 +153,7 @@ class MainWindow(QMainWindow):
         }                         )
 
     def handle_settings(self):
-        from pages.shared_ui import SettingsDialog #Use a local import to avoid circular import errors
+         #Use a local import to avoid circular import errors
 
         # Create and show the settings dialog
         dialog = SettingsDialog(

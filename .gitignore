@@ -1,5 +1,13 @@
+@"
+# Python cache
 __pycache__/
-pages/__pycache__/
-question/__pycache__/ 
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
 
-
+# Environments
+.env/
+.venv/
+venv/
+"@ | Out-File -FilePath .gitignore -Encoding utf8

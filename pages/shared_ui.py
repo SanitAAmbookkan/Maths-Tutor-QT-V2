@@ -1,8 +1,33 @@
 # pages/shared_ui.py
 
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout,QSizePolicy
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout,QSizePolicy, QDialog, QSlider, QDialogButtonBox, QComboBox
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPalette, QColor
+
+DIFFICULTY_LEVELS = ["Very Easy", "Easy", "Medium", "Hard", "Very Hard"]
+
+# settings_manager.py
+class SettingsManager:
+    def __init__(self):
+        self.difficulty_index = 1  # default Medium
+        self.language = "English"
+
+    def set_difficulty(self, index):
+        self.difficulty_index = index
+
+    def get_difficulty(self):
+        return self.difficulty_index
+
+    def set_language(self, lang):
+        self.language = lang
+
+    def get_language(self):
+        return self.language
+
+
+# Singleton instance to be imported anywhere
+settings = SettingsManager()
+
 
 def create_colored_widget(color: str = "#ffffff") -> QWidget:
     widget = QWidget()
@@ -70,3 +95,72 @@ def create_back_button(callback) -> QPushButton:
     back_btn.setProperty("class", "menu-button")
     back_btn.clicked.connect(callback)
     return back_btn
+
+class SettingsDialog(QDialog):
+    def __init__(self, parent=None, initial_difficulty=1, main_window=None):
+        super().__init__(parent)
+        self.setWindowTitle("Settings")
+        self.setFixedSize(400, 220)
+
+        self.main_window = main_window
+        self.updated_language = main_window.language if main_window else "English"
+
+        self.difficulty_slider = QSlider(Qt.Horizontal)
+        self.difficulty_slider.setMinimum(0)
+        self.difficulty_slider.setMaximum(len(DIFFICULTY_LEVELS) - 1)
+        self.difficulty_slider.setSingleStep(1)
+        self.difficulty_slider.setPageStep(1)
+        self.difficulty_slider.setTickInterval(1)
+        self.difficulty_slider.setTickPosition(QSlider.TicksBelow)
+        self.difficulty_slider.setTracking(True)
+        self.difficulty_slider.setFocusPolicy(Qt.StrongFocus)
+        self.difficulty_slider.setFocus()
+        self.difficulty_slider.setValue(initial_difficulty)
+        self.difficulty_slider.valueChanged.connect(self.update_difficulty_label)
+
+        self.difficulty_label = create_label(DIFFICULTY_LEVELS[initial_difficulty], font_size=12)
+
+        # 🔁 Reset Language Button
+        self.language_reset_btn = QPushButton("Reset Language")
+        self.language_reset_btn.setFixedHeight(30)
+        self.language_reset_btn.clicked.connect(self.handle_reset_language)
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept_settings)
+        button_box.rejected.connect(self.reject)
+
+        layout = QVBoxLayout()
+        layout.addWidget(create_label("Select Difficulty:", font_size=12, bold=False))
+        layout.addWidget(self.difficulty_slider)
+        layout.addWidget(self.difficulty_label)
+        layout.addSpacing(15)
+        layout.addWidget(self.language_reset_btn)
+        layout.addSpacing(10)
+        layout.addWidget(button_box)
+        self.setLayout(layout)
+
+    def update_difficulty_label(self, index):
+        self.difficulty_label.setText(DIFFICULTY_LEVELS[index])
+
+    def handle_reset_language(self):
+        from main import RootWindow, MainWindow # Dynamically import to avoid circular imports
+
+        dialog = RootWindow()
+        if dialog.exec_() == QDialog.Accepted:
+            new_lang = dialog.language_combo.currentText()
+            self.updated_language = new_lang
+            print(f"[Language Reset] New language: {new_lang}")
+
+    def accept_settings(self):
+        selected_index = self.difficulty_slider.value()
+        settings.set_difficulty(selected_index)
+        settings.set_language(self.updated_language)
+        print(f"[Difficulty] Index set to: {selected_index}")
+        self.accept()
+
+    def get_difficulty_index(self):
+        return self.difficulty_slider.value()
+
+    def get_selected_language(self):
+        return self.updated_language
+        

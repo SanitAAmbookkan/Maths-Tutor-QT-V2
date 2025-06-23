@@ -36,6 +36,12 @@ class QuestionProcessor:
         # Load the Excel file
         self.df = pd.read_excel(file_path)
         self.df = pd.DataFrame(self.df)
+
+        print(f"[Processor] Filtering with difficulty = {self.difficultyIndex}")
+
+        print(f"[Processor] Section: {self.questionType}")
+        #print(f"[Processor] Questions Loaded: {len(self.questions)}")
+
  
         # Apply filters: question type and difficulty
         self.df = self.df[

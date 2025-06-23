@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QWidget, QGridLayout,QStackedWidget, QSizePolicy
 )
 from PyQt5.QtCore import Qt
-from pages.ques_functions import load_pages  # ← your new function
+from question.loader import QuestionProcessor
 from pages.shared_ui import create_footer_buttons, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel_with_code  # ← your new function
 

@@ -2,12 +2,12 @@ import sys, os,shutil
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox,
+    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox, QSizePolicy
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSizePolicy #imported to resize button
 from pages.ques_functions import load_pages  # ← your new function
 from pages.ques_functions import load_pages # ← your new function
+from pages.shared_ui import toggle_audio, create_audio_toggle_button
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -131,14 +131,13 @@ class MainWindow(QMainWindow):
         # Bottom-left audio toggle
         bottom_layout = QHBoxLayout()
         bottom_layout.setContentsMargins(0, 0, 0, 0)
+    
+        audio_button = create_audio_toggle_button()
+        bottom_layout.addWidget(audio_button, alignment=Qt.AlignLeft)
 
-        self.audio_button = QPushButton("🔊")
-        self.audio_button.setObjectName("audio-button")
-        self.audio_button.setFixedSize(50, 50)
-        self.audio_button.setToolTip("Toggle Mute/Unmute")
-        self.audio_button.clicked.connect(self.toggle_audio)
-
-        bottom_layout.addWidget(self.audio_button, alignment=Qt.AlignLeft)
+        # Optional: auto focus for immediate Enter key support
+        audio_button.setFocus()
+        
         bottom_layout.addStretch()
 
         menu_layout.addLayout(bottom_layout)
@@ -146,12 +145,7 @@ class MainWindow(QMainWindow):
         self.menu_widget.setLayout(menu_layout)
         self.main_layout.addWidget(self.menu_widget)
         
-    def toggle_audio(self):
-      current = self.audio_button.text()
-      self.audio_button.setText("🔇" if current == "🔊" else "🔊")
-      print("Muted" if current == "🔊" else "Unmuted")
-
-
+       
     def create_buttons(self):
         button_grid = QGridLayout()
         button_grid.setSpacing(10)
@@ -262,6 +256,15 @@ class MainWindow(QMainWindow):
 
         # Also update theme icon
        self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
+  
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_M:
+           audio_button = self.findChild(QPushButton, "audioButton")
+           if audio_button:
+              toggle_audio(audio_button) 
+            
+    
+
 
 
 if __name__ == "__main__":

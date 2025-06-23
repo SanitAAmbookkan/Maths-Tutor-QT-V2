@@ -1,9 +1,9 @@
 # pages/shared_ui.py
 
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
-from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout
 
 
 def create_colored_widget(color: str = "#ffffff") -> QWidget:
@@ -14,7 +14,7 @@ def create_colored_widget(color: str = "#ffffff") -> QWidget:
     widget.setPalette(palette)
     return widget
 
-def create_label(text: str, font_size=16, bold=True) -> QLabel:
+def create_label(text: str, font_size=50, bold=True) -> QLabel:
     label = QLabel(text)
     label.setAlignment(Qt.AlignCenter)
     font = QFont("Arial", font_size)
@@ -22,7 +22,7 @@ def create_label(text: str, font_size=16, bold=True) -> QLabel:
     label.setFont(font)
     return label
 
-def create_colored_page(title: str, color: str = "#d0f0c0") -> QWidget:
+def create_colored_page(title: str, color: str = "#518c33") -> QWidget:
     page = create_colored_widget(color)
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignCenter)
@@ -53,7 +53,8 @@ def create_vertical_layout(widgets: list) -> QVBoxLayout:
     return layout
 
 def create_back_button(callback) -> QPushButton:
-    back_btn = QPushButton("HOME")
+    back_btn = QPushButton("🏠")
+    back_btn.setObjectName("home")
     back_btn.setFixedSize(150, 40)
     back_btn.setProperty("class", "menu-button")
     back_btn.clicked.connect(callback)
@@ -80,8 +81,6 @@ def create_answer_input(width=300, height=40, font_size=14) -> QLineEdit:
     """)
     return input_box
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout
-
 def wrap_center(widget):
     container = QWidget()
     layout = QHBoxLayout()
@@ -90,3 +89,35 @@ def wrap_center(widget):
     layout.addStretch()             # Push from the right
     container.setLayout(layout)
     return container
+
+
+#audio_button
+audio_muted = False
+
+def toggle_audio(button: QPushButton):
+    global audio_muted
+    audio_muted = not audio_muted
+    update_audio_icon(button)
+    print("Muted" if audio_muted else "Unmuted")
+
+def update_audio_icon(button: QPushButton):
+    icon = "🔇" if audio_muted else "🔊"
+    button.setText(icon)
+    button.setToolTip("Unmute" if audio_muted else "Mute")
+    button.setProperty("audioMuted", audio_muted)
+    button.style().unpolish(button)
+    button.style().polish(button)
+
+def create_audio_toggle_button() -> QPushButton:
+    button = QPushButton()
+    button.setObjectName("audioButton")
+    button.setFixedSize(QSize(50, 50))
+    update_audio_icon(button)
+    button.setFocusPolicy(Qt.StrongFocus)  # Accept keyboard focus
+    button.setDefault(True)  # Allow Enter key to work
+
+    # Connect both mouse click and Enter key
+    button.clicked.connect(lambda: toggle_audio(button))
+
+    return button
+

@@ -1,22 +1,21 @@
-/* === LIGHT THEME === */
-QWidget[class="central-widget"][theme="light"] {
+QWidget[class="central-widget"] {
     background-color: #f0f4f8;
 }
 
-QLabel[class="main-title"][theme="light"] {
+QLabel[class="main-title"] {
     font-size: 28px;
     font-weight: bold;
     color: #2c3e50;
     padding: 15px;
 }
 
-QLabel[class="subtitle"][theme="light"] {
+QLabel[class="subtitle"] {
     font-size: 18px;
     color: #34495e;
     padding: 22px;
 }
 
-QPushButton[class="menu-button"][theme="light"] {
+QPushButton[class="menu-button"] {
     background-color: #3498db;
     color: white;
     font-size: 20px;
@@ -26,54 +25,30 @@ QPushButton[class="menu-button"][theme="light"] {
     min-height: 60px;
 }
 
-QPushButton[class="menu-button"][theme="light"]:hover {
+QPushButton[class="menu-button"]:hover {
     background-color: #2980b9;
 }
 
-QPushButton#audio-button[theme="light"] {
-    background-color: #f0f0f0;
-    border: 2px solid #999;
-    border-radius: 8px;
-    font-size: 30px;
-}
-
-QPushButton#audio-button[theme="light"]:hover {
-    background-color: #d0d0d0;
-}
-
-
-/* === DARK THEME === */
-QWidget[class="central-widget"][theme="dark"] {
-    background-color: #1e1e1e;
-}
-
-QLabel[class="main-title"][theme="dark"],
-QLabel[class="subtitle"][theme="dark"] {
-    color: #ffffff;
-}
-
-QPushButton[class="menu-button"][theme="dark"] {
-    background-color: #444;
-    color: white;
+QPushButton#audioButton {
     font-size: 20px;
-    padding: 20px;
-    border-radius: 10px;
-    min-width: 100px;
-    min-height: 60px;
+    background-color: transparent;
+    border: none;
+    padding: 5px;
 }
 
-QPushButton[class="menu-button"][theme="dark"]:hover {
-    background-color: #666;
+QPushButton#audioButton:hover {
+    background-color: #dcdcdc;
+    border-radius: 6px;
 }
 
-QPushButton#audio-button[theme="dark"] {
-    background-color: #333;
-    border: 2px solid #888;
-    border-radius: 8px;
-    font-size: 100px;
-    color: white;
+QPushButton#backButton {
+    font-size: 22px;
+    background-color: transparent;
+    border: none;
+    padding: 5px;
 }
 
-QPushButton#audio-button[theme="dark"]:hover {
-    background-color: #555;
+QPushButton#backButton:hover {
+    background-color: #cccccc;
+    border-radius: 6px;
 }

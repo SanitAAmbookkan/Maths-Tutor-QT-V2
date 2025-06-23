@@ -3,3 +3,11 @@
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     color: #2d3748;
 }
+
+.title {
+    font-size: 22px;
+    font-family: "Poppins";
+    font-weight: bold;
+    color:#ffffff;
+    margin-bottom: 0px;
+}

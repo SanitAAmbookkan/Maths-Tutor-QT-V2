@@ -7,6 +7,8 @@ from pages.shared_ui import (
 )
 from pages.ques_ui  import create_question_widget
 from question.loader  import get_questions
+import os
+import random
 
 def load_pages(section_name, back_callback, difficulty_index,processor,
                main_window=None):
@@ -40,4 +42,3 @@ def load_pages(section_name, back_callback, difficulty_index,processor,
     page.setLayout(create_vertical_layout(widgets))
     print(f"[QUESTION SHOWN] {questions}")
     return page
- 

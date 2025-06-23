@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from pages.ques_functions import load_pages # ← your new function
 from question.loader import QuestionProcessor
-
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtCore import QUrl
 class RootWindow(QDialog):
     def __init__(self):
         super().__init__()
@@ -15,7 +16,8 @@ class RootWindow(QDialog):
         self.setFixedSize(400, 250)
         self.init_ui()
         self.load_style("language_dialog.qss")
- 
+        self.player = self.setup_background_music()
+
     def init_ui(self):
         title_label = QLabel("Welcome to Maths Tutor!")
         title_label.setProperty("class", "title")
@@ -64,7 +66,20 @@ class RootWindow(QDialog):
         if os.path.exists(style_path):
             with open(style_path, "r") as f:
                 self.setStyleSheet(f.read())
- 
+    def setup_background_music(self):
+        player = QMediaPlayer()
+        url = QUrl.fromLocalFile("sounds/backgroundmusic.mp3")
+        content = QMediaContent(url)
+        player.setMedia(content)
+        player.setVolume(30)
+        player.play()
+
+        def loop_music(status):
+            if status == QMediaPlayer.EndOfMedia:
+                player.play()
+
+        player.mediaStatusChanged.connect(loop_music)
+        return player
  
 class MainWindow(QMainWindow):
     def __init__(self, language="English"):
@@ -227,11 +242,13 @@ class MainWindow(QMainWindow):
         if os.path.exists(path):
             with open(path, "r") as f:
                 self.setStyleSheet(f.read())
- 
+        
+    
    
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
+    
     style_file = os.path.join("styles", "app.qss")
     if os.path.exists(style_file):
         with open(style_file, "r") as f:
@@ -240,5 +257,6 @@ if __name__ == "__main__":
     dialog = RootWindow()
     if dialog.exec_() == QDialog.Accepted:
         window = MainWindow(language=dialog.language_combo.currentText())
+        
         window.show()
         sys.exit(app.exec_())

@@ -1,6 +1,17 @@
 import os
 import pandas as pd
 import random
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtCore import QUrl
+media_player = QMediaPlayer()
+def play_sound(filename):
+    filepath = os.path.abspath(os.path.join("sounds", filename))
+    if os.path.exists(filepath):
+        media_player.setMedia(QMediaContent(QUrl.fromLocalFile(filepath)))
+        media_player.play()
+    else:
+        print(f"[SOUND ERROR] File not found: {filepath}")
+
 def get_questions(section_name, difficulty_index):
     processor = QuestionProcessor(section_name.lower(), difficulty_index)
     processor.process_file()
@@ -14,6 +25,7 @@ class QuestionProcessor:
         self.variables = []
         self.oprands = []
         self.rowIndex = 0
+        self.retry_count = 0
          # ✅ DDA-related fields
         self.total_attempts = 0
         self.correct_answers = 0
@@ -21,7 +33,7 @@ class QuestionProcessor:
         self.incorrect_streak = 0
         self.current_performance_rate = 0
         self.current_difficulty = difficultyIndex  # Use to adjust difficulty dynamically
-
+        self.max_questions = 10
     def process_file(self):
         file_path = os.path.join(os.getcwd(), "question", "question.xlsx")
         print(f"Processing file: {file_path}")
@@ -175,3 +187,5 @@ class QuestionProcessor:
         print(f"📊 Performance Rate: {self.current_performance_rate}")
         print(f"🎯 Current Difficulty: {self.current_difficulty}")
         print(f"📈 Attempts: {self.total_attempts} | Correct: {self.correct_answers}")
+
+

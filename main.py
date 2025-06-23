@@ -107,7 +107,7 @@ class MainWindow(QMainWindow):
         title.setProperty("class", "main-title")
         set_accessibility(title,
                           "Title",
-                          "")
+                          "hahahahaha")
 
 
 
@@ -159,6 +159,15 @@ class MainWindow(QMainWindow):
         announcement = "Muted" if current == "🔊" else "Unmuted"
         self.a11y_live_label.setText("")
         QTimer.singleShot(100, lambda: self.a11y_live_label.setText(announcement))
+        if self.audio_muted:
+            self.audio_button.setText("🔇")
+            set_accessibility(self.audio_button, "Unmute", "Audio is currently muted. Press to unmute.")
+            self.announce_accessibility("Audio muted")
+        else:
+            self.audio_button.setText("🔊")
+            set_accessibility(self.audio_button, "Mute", "Audio is currently unmuted. Press to mute.")
+            self.announce_accessibility("Audio unmuted")
+      
 
     def create_buttons(self):
         button_grid = QGridLayout()

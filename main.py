@@ -101,13 +101,22 @@ class MainWindow(QMainWindow):
         top_bar.setContentsMargins(0, 0, 0, 0)
 
         menu_layout.addLayout(top_bar)
-
-        title = QLabel("Welcome to Maths Tutor!")
+        name='Welcome to maths tutor'
+        title = QLabel(name)
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
-        set_accessibility(title,
-                          "Title",
-                          "hahahahaha")
+        #set_accessibility(title,
+        #from PyQt5.QtGui import QAccessible
+        #from PyQt5.QtCore import QAccessibleEvent, QAccessibleValueChangeEvent
+        from PyQt5.QtWidgets import QTextEdit
+        hi = QTextEdit('hi devika')
+        hi.setAccessibleName("Live Info Box")
+        hi.setReadOnly(True)
+        hi.setFocus()  # Make sure Orca reads it when added
+
+        menu_layout.addWidget(hi)
+        
+                    
 
 
 

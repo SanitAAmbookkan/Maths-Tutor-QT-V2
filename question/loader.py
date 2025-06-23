@@ -77,7 +77,12 @@ class QuestionProcessor:
  
         # Extract and solve answer using helper functions
         self.extractAnswer()
-        answer = int(self.Pr_answer) if self.Pr_answer is not None else None
+        try:
+            answer = int(float(self.Pr_answer))
+        except (TypeError, ValueError):
+            print(f"[ERROR] Invalid answer: {self.Pr_answer}")
+            answer = None
+
  
         print(f"Question shown: {question_template}")
         print(f"Answer calculated: {answer}")

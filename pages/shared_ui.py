@@ -190,7 +190,7 @@ class QuestionWidget(QWidget):
         if self.processor.total_attempts >= self.max_questions:
             self.show_final_score()
             return
-        question_text, self.answer = self.processor.get_random_question()
+        question_text, self.answer = self.processor.get_questions()
         self.start_time = time()
         self.label.setText(question_text)
         self.input_box.setText("")  # ✨ Clear only the input

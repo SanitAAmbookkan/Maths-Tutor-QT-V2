@@ -28,7 +28,10 @@ class QuestionProcessor:
         self.incorrect_streak = 0
         self.current_performance_rate = 0
         self.current_difficulty = difficultyIndex  # Use to adjust difficulty dynamically
- 
+    def get_questions(self):
+        
+        self.process_file()
+        return self.get_random_question()
     def process_file(self):
         file_path = os.path.join(os.getcwd(), "question", "question.xlsx")
         print(f"Processing file: {file_path}")
@@ -175,6 +178,7 @@ class QuestionProcessor:
         if self.current_performance_rate >= 30:
             if self.current_difficulty < 5:  # max difficulty cap (optional)
                 self.current_difficulty += 1
+                self.difficultyIndex=self.current_difficulty
             self.current_performance_rate = 0
             print("🎯 Level up! Increased difficulty to", self.current_difficulty)
  

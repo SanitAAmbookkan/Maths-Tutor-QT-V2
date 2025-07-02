@@ -243,9 +243,9 @@ class QuestionWidget(QWidget):
                 self.processor.retry_count += 1
                 sound_index = random.randint(1, 3)
                 if self.processor.retry_count == 1:
-                    self.window.play_sound(f"wrong-anwser-{sound_index}.mp3")  # keep the filename typo if that’s how yours are named
+                    self.main_window.play_sound(f"wrong-anwser-{sound_index}.mp3")  # keep the filename typo if that’s how yours are named
                 else:
-                    self.window.play_sound(f"wrong-anwser-repeted-{sound_index}.mp3")
+                    self.main_window.play_sound(f"wrong-anwser-repeted-{sound_index}.mp3")
                 
                 if self.processor.retry_count < 3:
                     self.result_label.setText(f"❌ Wrong. Try again ({self.processor.retry_count}/3)")

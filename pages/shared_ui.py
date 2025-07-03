@@ -327,7 +327,7 @@ class SettingsDialog(QDialog):
     def handle_reset_language(self):
         from main import RootWindow, MainWindow # Dynamically import to avoid circular imports
 
-        dialog = RootWindow()
+        dialog = RootWindow(minimal=True)
         if dialog.exec_() == QDialog.Accepted:
             new_lang = dialog.language_combo.currentText()
             self.updated_language = new_lang

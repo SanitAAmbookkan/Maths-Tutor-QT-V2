@@ -12,17 +12,22 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
 
 class RootWindow(QDialog):
-    def __init__(self):
+    def __init__(self,minimal=False):
         super().__init__()
+        self.minimal = minimal
         self.setWindowTitle("Maths Tutor - Language Selection")
-        self.setFixedSize(400, 250)
+        self.setFixedSize(400, 250 if not self.minimal else 150)
         self.init_ui()
         self.load_style("language_dialog.qss")
  
     def init_ui(self):
-        title_label = QLabel("Welcome to Maths Tutor!")
-        title_label.setProperty("class", "title")
- 
+        layout = QVBoxLayout()
+
+        if not self.minimal:
+            title_label = QLabel("Welcome to Maths Tutor!")
+            title_label.setProperty("class", "title")
+            layout.addWidget(title_label)
+            layout.addSpacing(15)
         language_label = QLabel("Select your preferred language:")
         language_label.setProperty("class", "subtitle")
  
@@ -30,13 +35,18 @@ class RootWindow(QDialog):
         self.language_combo = QComboBox()
         self.language_combo.addItems(languages)
         self.language_combo.setProperty("class", "combo-box")
+        layout.addWidget(language_label)
+        layout.addWidget(self.language_combo)
+
+        if not self.minimal:
+            self.remember_check = QCheckBox("Remember my selection")
+            self.remember_check.setChecked(False)
+            layout.addWidget(self.remember_check)
         
+        layout.addStretch()
 
-
-        self.remember_check = QCheckBox("Remember my selection")
-        self.remember_check.setChecked(False)
-
-
+        if not self.minimal:
+            layout.addWidget(self.create_line())
         self.ok_button = QPushButton("Continue")
         self.ok_button.setDefault(True)
         self.ok_button.setAutoDefault(True)
@@ -47,16 +57,6 @@ class RootWindow(QDialog):
         self.cancel_button.setShortcut(Qt.Key_Escape)
 
 
-       
-
-        layout = QVBoxLayout()
-        layout.addWidget(title_label)
-        layout.addSpacing(15)
-        layout.addWidget(language_label)
-        layout.addWidget(self.language_combo)
-        layout.addWidget(self.remember_check)
-        layout.addStretch()
-        layout.addWidget(self.create_line())
         btns = QHBoxLayout()
         btns.addStretch()
         btns.addWidget(self.cancel_button)

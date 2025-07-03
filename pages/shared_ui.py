@@ -5,34 +5,7 @@ from PyQt5.QtWidgets import ( QWidget, QLabel, QHBoxLayout, QPushButton,
                               ,QSpacerItem,QLineEdit)
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
-from question.loader import QuestionProcessor
-from time import time
-
-DIFFICULTY_LEVELS = ["Very Easy", "Easy", "Medium", "Hard", "Very Hard"]
-
-# settings_manager.py
-class SettingsManager:
-    def __init__(self):
-        self.difficulty_index = 1  # default Medium
-        self.language = "English"
-
-    def set_difficulty(self, index):
-        self.difficulty_index = index
-
-    def get_difficulty(self):
-        return self.difficulty_index
-
-    def set_language(self, lang):
-        self.language = lang
-
-    def get_language(self):
-        return self.language
-
-
-# Singleton instance to be imported anywhere
-settings = SettingsManager()
-
+from PyQt5.QtGui import QFont, QPalette, QColor
 
 def create_colored_widget(color: str = "#ffffff") -> QWidget:
     widget = QWidget()
@@ -141,16 +114,16 @@ def wrap_center(widget):
     return container
 
 class QuestionWidget(QWidget):
-    def __init__(self, processor):
+    def __init__(self, processor,window=None):
         super().__init__()
         self.processor = processor
         self.answer = None
         self.start_time = time()
-
+        self.max_questions = 10
         self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
-
+        self.main_window = window
         self.init_ui()
 
     def init_ui(self):
@@ -187,12 +160,22 @@ class QuestionWidget(QWidget):
         self.load_new_question()
 
     def load_new_question(self):
-        question_text, self.answer = self.processor.get_random_question()
+        if self.processor.total_attempts >= self.max_questions:
+            self.show_final_score()
+            return
+        question_text, self.answer = self.processor.get_questions()
         self.start_time = time()
         self.label.setText(question_text)
         self.input_box.setText("")  # ✨ Clear only the input
         self.result_label.setText("")
-
+    def show_final_score(self):
+                self.result_label.setText(
+                    "🎉 Quiz Finished!"
+                )
+                print("Final Score:", self.processor.correct_answers, "/", self.processor.total_attempts)
+                sound_index = random.randint(1, 3)
+                self.main_window.play_sound(f"finished-{sound_index}.mp3")
+            
     def check_answer(self):
         try:
             user_input = self.input_box.text().strip()
@@ -204,16 +187,51 @@ class QuestionWidget(QWidget):
 
             if correct:
                 self.result_label.setText("✅ Correct!")
+                print("[DEBUG] main_window:", self.main_window)
+                sound_index = random.randint(1, 3)
+                if elapsed < 5:
+                    
+                    if self.main_window and callable(getattr(self.main_window, "play_sound", None)):
+                        self.main_window.play_sound(f"excellent-{sound_index}.mp3")
+                elif elapsed < 10:
+                    
+                    if self.main_window:
+                        self.main_window.play_sound(f"very-good-{sound_index}.mp3")
+                elif elapsed < 15:
+                  
+                    if self.main_window:
+                        self.main_window.play_sound(f"good-{sound_index}.mp3")
+                elif elapsed < 20:
+                   
+                    if self.main_window:
+                        self.main_window.play_sound(f"not-bad-{sound_index}.mp3")
+                else:
+                    
+                    if self.main_window:
+                        self.main_window.play_sound(f"okay-{sound_index}.mp3")
+
+                self.processor.retry_count = 0
                 self.load_new_question()  # ✨ Just update content
             else:
-                self.result_label.setText(f"❌ Wrong. Try again.")
-
+                self.processor.retry_count += 1
+                sound_index = random.randint(1, 3)
+                if self.processor.retry_count == 1:
+                    self.main_window.play_sound(f"wrong-anwser-{sound_index}.mp3")  # keep the filename typo if that’s how yours are named
+                else:
+                    self.main_window.play_sound(f"wrong-anwser-repeted-{sound_index}.mp3")
+                
+                if self.processor.retry_count < 3:
+                    self.result_label.setText(f"❌ Wrong. Try again ({self.processor.retry_count}/3)")
+                else:
+                    self.result_label.setText("❌ Wrong. Moving to next question.")
+                    self.processor.retry_count = 0
+                    self.load_new_question()
         except Exception as e:
             self.result_label.setText(f"Error: {str(e)}")
 
 
 
-def create_dynamic_question_ui(section_name, difficulty_index, back_callback):
+def create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=None):
     container = QWidget()
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignTop)
@@ -221,8 +239,8 @@ def create_dynamic_question_ui(section_name, difficulty_index, back_callback):
 
     processor = QuestionProcessor(section_name, difficulty_index)
     processor.process_file()
-
-    question_widget = QuestionWidget(processor)
+    
+    question_widget = QuestionWidget(processor,window=window)
 
     layout.addWidget(question_widget)
 
@@ -282,7 +300,7 @@ class SettingsDialog(QDialog):
     def handle_reset_language(self):
         from main import RootWindow, MainWindow # Dynamically import to avoid circular imports
 
-        dialog = RootWindow()
+        dialog = RootWindow(minimal=True)
         if dialog.exec_() == QDialog.Accepted:
             new_lang = dialog.language_combo.currentText()
             self.updated_language = new_lang

@@ -17,9 +17,14 @@ from PyQt5.QtCore import Qt
 
 
 
-def load_pages(section_name, back_callback, difficulty_index, main_window=None):
-    page = create_colored_widget("#e0f7fa")
+def load_pages(section_name, back_callback, difficulty_index,
+               main_window=None):
 
+    page = create_colored_widget("#e0f7fa")
+ 
+    widgets = []
+ 
+    # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
         page = create_colored_widget("#e0f7fa")
 
@@ -50,9 +55,8 @@ def load_pages(section_name, back_callback, difficulty_index, main_window=None):
         page.setLayout(layout)
         return page
 
-    # ✅ For other sections
-    return create_dynamic_question_ui(section_name, difficulty_index, back_callback)
-
+    # ✅ For all other sections, use dynamic question UI
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
 
 
 def upload_excel_with_code(parent_widget, access_code="teacher123", dest_folder="question"):

@@ -4,10 +4,7 @@ import random
 
 
 
-def get_questions(section_name, difficulty_index):
-    processor = QuestionProcessor(section_name.lower(), difficulty_index)
-    processor.process_file()
-    return [processor.get_random_question()]
+
 
 
 
@@ -28,7 +25,10 @@ class QuestionProcessor:
         self.incorrect_streak = 0
         self.current_performance_rate = 0
         self.current_difficulty = difficultyIndex  # Use to adjust difficulty dynamically
- 
+    def get_questions(self):
+        
+        self.process_file()
+        return self.get_random_question()
     def process_file(self):
         file_path = os.path.join(os.getcwd(), "question", "question.xlsx")
         print(f"Processing file: {file_path}")
@@ -77,13 +77,8 @@ class QuestionProcessor:
  
         # Extract and solve answer using helper functions
         self.extractAnswer()
-        try:
-            answer = int(float(self.Pr_answer))
-        except (TypeError, ValueError):
-            print(f"[ERROR] Invalid answer: {self.Pr_answer}")
-            answer = None
+        answer = int(self.Pr_answer) if self.Pr_answer is not None else None
 
- 
         print(f"Question shown: {question_template}")
         print(f"Answer calculated: {answer}")
         return question_template, answer
@@ -180,6 +175,7 @@ class QuestionProcessor:
         if self.current_performance_rate >= 30:
             if self.current_difficulty < 5:  # max difficulty cap (optional)
                 self.current_difficulty += 1
+                self.difficultyIndex=self.current_difficulty
             self.current_performance_rate = 0
             print("🎯 Level up! Increased difficulty to", self.current_difficulty)
  

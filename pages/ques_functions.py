@@ -8,7 +8,7 @@ from pages.shared_ui import (
     create_vertical_layout,
     create_dynamic_question_ui
 )
-from question.loader import get_questions
+
 import os, shutil
 import pandas as pd
 

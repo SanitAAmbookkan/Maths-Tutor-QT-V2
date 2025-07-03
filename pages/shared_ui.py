@@ -5,7 +5,34 @@ from PyQt5.QtWidgets import ( QWidget, QLabel, QHBoxLayout, QPushButton,
                               ,QSpacerItem,QLineEdit)
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QPalette, QColor
+from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
+from question.loader import QuestionProcessor
+from time import time
+import random
+DIFFICULTY_LEVELS = ["Very Easy", "Easy", "Medium", "Hard", "Very Hard"]
+
+# settings_manager.py
+class SettingsManager:
+    def __init__(self):
+        self.difficulty_index = 1  # default Medium
+        self.language = "English"
+
+    def set_difficulty(self, index):
+        self.difficulty_index = index
+
+    def get_difficulty(self):
+        return self.difficulty_index
+
+    def set_language(self, lang):
+        self.language = lang
+
+    def get_language(self):
+        return self.language
+
+
+# Singleton instance to be imported anywhere
+settings = SettingsManager()
+
 
 def create_colored_widget(color: str = "#ffffff") -> QWidget:
     widget = QWidget()
@@ -187,7 +214,7 @@ class QuestionWidget(QWidget):
 
             if correct:
                 self.result_label.setText("✅ Correct!")
-                print("[DEBUG] main_window:", self.main_window)
+                
                 sound_index = random.randint(1, 3)
                 if elapsed < 5:
                     
@@ -300,7 +327,7 @@ class SettingsDialog(QDialog):
     def handle_reset_language(self):
         from main import RootWindow, MainWindow # Dynamically import to avoid circular imports
 
-        dialog = RootWindow(minimal=True)
+        dialog = RootWindow()
         if dialog.exec_() == QDialog.Accepted:
             new_lang = dialog.language_combo.currentText()
             self.updated_language = new_lang

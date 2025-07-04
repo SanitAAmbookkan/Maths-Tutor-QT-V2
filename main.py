@@ -11,6 +11,7 @@ from pages.ques_functions import load_pages, upload_excel_with_code  # ← your 
 from tts.engine import TextToSpeech
 
 
+
 class RootWindow(QDialog):
     def __init__(self):
         super().__init__()
@@ -22,7 +23,7 @@ class RootWindow(QDialog):
     def init_ui(self):
         title_label = QLabel("Welcome to Maths Tutor!")
         title_label.setProperty("class", "title")
-        self.tts.speak("Welcome to Maths Tutor")
+
 
         language_label = QLabel("Select your preferred language:")
         language_label.setProperty("class", "subtitle")
@@ -84,22 +85,23 @@ class RootWindow(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self, language="English"):
         super().__init__()
-
-        self.tts = TextToSpeech()  #  Add this line to initialize TTS
+        
 
         self.setWindowTitle(f"Maths Tutor - {language}")
         self.resize(900, 600)
         self.setMinimumSize(800, 550) 
         self.current_difficulty = 1  
         self.section_pages = {} 
-
+   
         self.language = language
         self.init_ui()
+        
+
         self.load_style("main_window.qss")
         self.current_theme = "light"  # Initial theme
 
-
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
+
     def init_ui(self):
         self.central_widget = QWidget()
         self.central_widget.setProperty("class", "central-widget")
@@ -119,25 +121,30 @@ class MainWindow(QMainWindow):
          # Top bar for theme toggle
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
+        self.tts = TextToSpeech()  #  Add this line to initialize TTS
 
-         # Theme button (🌙 for light, ☀️ for dark)
+        # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
         self.theme_button.setFixedSize(40, 40)
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
+        self.theme_button.setAccessibleName("")
+        self.theme_button.setAccessibleDescription(f"Welcome to maths tutor. Ready to learn in {self.language}! . Press to switch to dark theme")
 
         top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
         top_bar.addStretch()
 
         menu_layout.addLayout(top_bar)
-
+        
         title = QLabel("Welcome to Maths Tutor!")
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
- 
+        title.setTextInteractionFlags(Qt.TextSelectableByKeyboard)
+        
         subtitle = QLabel(f"Ready to learn in {self.language}!")
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
+        #self.tts.speak(f"Ready to ... learn in {self.language}    ")
  
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
@@ -172,12 +179,23 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.main_footer)
         self.main_layout.addWidget(self.section_footer)
         self.section_footer.hide()
-    
+        
     def toggle_audio(self):
-      current = self.audio_button.text()
-      self.audio_button.setText("🔇" if current == "🔊" else "🔊")
-      print("Muted" if current == "🔊" else "Unmuted")
+        current = self.audio_button.text()
+        self.audio_button.setText("🔇" if current == "🔊" else "🔊")
+        print("Muted" if current == "🔊" else "Unmuted")
+        self.tts.speak(f"{self.audio_button.capitalize()} theme activated")
 
+    def toggle_audio(self):
+        current = self.audio_button.text()
+        new_state = "🔇" if current == "🔊" else "🔊"
+        self.audio_button.setText(new_state)
+
+        # Speak appropriate message
+        message = "Audio muted" if new_state == "🔇" else "Audio unmuted"
+        self.tts.speak(message)
+
+      
 
     def create_buttons(self):
         button_grid = QGridLayout()
@@ -185,27 +203,33 @@ class MainWindow(QMainWindow):
         button_grid.setContentsMargins(10, 10, 10, 10)
 
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
-        self.menu_buttons = [] 
-        
+        common_description = (
+            "This is a learning section with math problems. Press Enter to start practicing."
+            )
+        self.menu_buttons = []
+
         for i, name in enumerate(sections):
             button = QPushButton(name)
-
-            # Set a good preferred base size
             button.setMinimumSize(160, 50)
-            button.setMaximumSize(220, 60)  # Optional: Prevent growing too big
-
-             # Use Preferred policy to allow controlled resizing
+            button.setMaximumSize(220, 60)
             button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-
             button.setProperty("class", "menu-button")
+
+            # Set accessible name for all buttons
+            button.setAccessibleName(name)
+
+            # Set accessible description only for the first button
+            if i == 0:
+                button.setAccessibleDescription(common_description)
+
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
 
             self.menu_buttons.append(button)
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
 
-            
-        return button_grid 
+        return button_grid
+
 
     def create_main_footer_buttons(self):
         return create_footer_buttons(
@@ -306,6 +330,8 @@ class MainWindow(QMainWindow):
         self.central_widget.style().unpolish(self.central_widget)
         self.central_widget.style().polish(self.central_widget)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
+        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
+      
 
 
 if __name__ == "__main__":

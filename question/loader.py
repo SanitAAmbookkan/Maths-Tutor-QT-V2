@@ -61,7 +61,8 @@ class QuestionProcessor:
         self.rowIndex = random.randint(0, len(self.df) - 1)
  
         # Get variable names and operand ranges from the format column (col 2)
-        variable_string = str(self.df.iloc[self.rowIndex, 2])
+        #variable_string = str(self.df.iloc[self.rowIndex, 2])
+        variable_string = str(self.df.iloc[self.rowIndex]["operands"])
         input_string = ''.join(c for c in variable_string if not c.isalpha())
         self.variables = [c for c in variable_string if c.isalpha()]
         self.oprands = self.parseInputRange(input_string)
@@ -71,29 +72,37 @@ class QuestionProcessor:
         print(f"[DEBUG] Operands: {self.oprands}")
  
         # Replace placeholders in the question string (col 0)
-        question_template = str(self.df.iloc[self.rowIndex, 0])
+        #question_template = str(self.df.iloc[self.rowIndex, 0])
+        question_template = str(self.df.iloc[self.rowIndex]["question"])
         for i, var in enumerate(self.variables):
             question_template = question_template.replace(f"{{{var}}}", str(self.oprands[i]))
  
         # Extract and solve answer using helper functions
         self.extractAnswer()
-        answer = int(self.Pr_answer) if self.Pr_answer is not None else None
+        #answer = int(self.Pr_answer) if self.Pr_answer is not None else None
+        answer = round(float(self.Pr_answer)) if self.Pr_answer is not None else None
+
  
         print(f"Question shown: {question_template}")
         print(f"Answer calculated: {answer}")
         return question_template, answer
     def extractAnswer(self):
-        answer_equation = self.getAnswer(self.rowIndex, 4)  # assuming column 4 contains the formula
+        #answer_equation = self.getAnswer(self.rowIndex, 4)  # assuming column 4 contains the formula
+        answer_equation = self.getAnswer(self.rowIndex, "equation")
+
         final_answer = self.solveEquation(answer_equation)
         print("finalAns:", final_answer)
         self.Pr_answer = str(final_answer)
  
     def getAnswer(self, row, column):
-        ans_equation = str(self.df.iloc[row, column])
+        ans_equation = str(self.df.iloc[row][column])
+        ans_equation = ans_equation.replace("×", "*")  # ✅ replace invalid multiplication sign
         for i in range(len(self.variables)):
             ans_equation = ans_equation.replace(f"{{{self.variables[i]}}}", str(self.oprands[i]))
         print("ansEquation (parsed):", ans_equation)
         return ans_equation
+
+
  
     def solveEquation(self, ans_equation):
         try:
@@ -126,15 +135,20 @@ class QuestionProcessor:
  
  
     def extractType(self, inputRange):
-        if "," in inputRange:
-            return random.choice(list(map(int, inputRange.split(","))))
-        elif ":" in inputRange:
-            a, b = map(int, inputRange.split(":"))
-            return random.randint(a, b)
-        elif ";" in inputRange:
-            a, b, c = map(int, inputRange.split(";"))
-            return a * random.randint(b, c)
-        return int(inputRange)
+        try:
+            if "," in inputRange:
+                return random.choice(list(map(int, inputRange.split(","))))
+            elif ":" in inputRange:
+                a, b = map(int, inputRange.split(":"))
+                return random.randint(a, b)
+            elif ";" in inputRange:
+                a, b, c = map(int, inputRange.split(";"))
+                return a * random.randint(b, c)
+            return int(inputRange)
+        except Exception as e:
+            print("[ERROR] Invalid inputRange format:", inputRange, e)
+            return 0  # fallback
+
  
     def replaceVariables(self, rowIndex, columnIndex):
         val = str(self.df.iloc[rowIndex, columnIndex])  # Force string to allow .replace()

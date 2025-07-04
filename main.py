@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from question.loader import QuestionProcessor
 from pages.shared_ui import create_footer_buttons, SettingsDialog
-from pages.ques_functions import load_pages, upload_excel_with_code  # ← your new function
+from pages.ques_functions import load_pages, upload_excel  # ← your new function
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
 
@@ -305,7 +305,7 @@ class MainWindow(QMainWindow):
                 widget.setParent(None)
 
     def handle_upload(self):
-        upload_excel_with_code(self)
+        upload_excel(self)
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)

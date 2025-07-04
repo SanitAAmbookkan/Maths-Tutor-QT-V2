@@ -11,6 +11,44 @@ from time import time
 import random
 DIFFICULTY_LEVELS = ["Very Easy", "Easy", "Medium", "Hard", "Very Hard"]
 
+
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
+
+def create_entry_ui(main_window) -> QWidget:
+    entry_widget = QWidget()
+    layout = QVBoxLayout()
+    layout.setAlignment(Qt.AlignCenter)
+
+    label = QLabel("Click below to start the quiz")
+    label.setFont(QFont("Arial", 24))
+    label.setAlignment(Qt.AlignCenter)
+
+    button = QPushButton("Start")
+    button.setFont(QFont("Arial", 16))
+    button.setFixedSize(200, 50)
+    button.setStyleSheet("background-color: #28a745; color: white; border-radius: 8px;")
+
+    def start_quiz():
+        print("Start button clicked")  # ✅ DEBUG POINT
+        from pages.ques_functions import start_uploaded_quiz
+        start_uploaded_quiz(main_window)
+
+    button.clicked.connect(start_quiz)
+
+    layout.addWidget(label)
+    layout.addSpacing(20)
+    layout.addWidget(button, alignment=Qt.AlignCenter)
+
+    entry_widget.setLayout(layout)
+    return entry_widget
+
+
+
+
+
+
 # settings_manager.py
 class SettingsManager:
     def __init__(self):
@@ -176,16 +214,33 @@ class QuestionWidget(QWidget):
         self.result_label.setAlignment(Qt.AlignCenter)
         self.result_label.setFont(QFont("Arial", 12))
 
-        # 🧱 Assemble the main layout
+        #🧱 Assemble the main layout
         self.layout.addWidget(self.question_area)
         self.layout.addSpacing(20)
         self.layout.addWidget(self.input_box, alignment=Qt.AlignCenter)
         self.layout.addSpacing(10)
         self.layout.addWidget(self.result_label)
         self.layout.addStretch()
+        self.end_button = QPushButton("End Session")
+        self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
+        self.end_button.setFixedWidth(150)
+        self.end_button.clicked.connect(self.end_session)
+        self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
+
+        self.layout.addStretch()
+        
 
         self.load_new_question()
+    
 
+    def end_session(self):
+        if self.main_window:
+            from main import MainWindow  # Import your section menu window
+            self.main_window.setCentralWidget(MainWindow(self.main_window))
+
+
+
+    
     def load_new_question(self):
         if self.processor.total_attempts >= self.max_questions:
             self.show_final_score()
@@ -345,5 +400,8 @@ class SettingsDialog(QDialog):
 
     def get_selected_language(self):
         return self.updated_language
+    
+   
+
         
 

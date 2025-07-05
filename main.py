@@ -9,7 +9,7 @@ from question.loader import QuestionProcessor
 from pages.shared_ui import create_footer_buttons, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent,,QAudioOutput
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent,QAudioOutput
 from PyQt5.QtCore import QUrl
 
 class RootWindow(QDialog):

@@ -235,6 +235,10 @@ class QuestionWidget(QWidget):
     
 
     def end_session(self):
+        #if hasattr(self, 'bg_player') and self.bg_player is not None:
+    
+        self.main_window.bg_player.stop()   # or .stop() if you want to fully stop it
+        print("[BG MUSIC] Stopped due to end session.")
         if self.main_window:
             from main import MainWindow  # Import your section menu window
             self.main_window.setCentralWidget(MainWindow(self.main_window))
@@ -272,7 +276,7 @@ class QuestionWidget(QWidget):
                 self.result_label.setText("✅ Correct!")
 
 
-=========
+
                
                 sound_index = random.randint(1, 3)
                 

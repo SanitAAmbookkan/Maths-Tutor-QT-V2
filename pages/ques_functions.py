@@ -12,7 +12,7 @@ from pages.shared_ui import (
     QuestionWidget
 )
 
-from question.loader import get_questions,QuestionProcessor
+from question.loader import QuestionProcessor
 import os, shutil
 import pandas as pd
 
@@ -59,7 +59,7 @@ def load_pages(section_name, back_callback, difficulty_index,
         return page
 
     # ✅ For other sections
-    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window))
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
 
 
 

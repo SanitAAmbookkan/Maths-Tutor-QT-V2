@@ -293,6 +293,7 @@ class MainWindow(QMainWindow):
         self.section_footer.show()
 
     def back_to_main_menu(self):
+        self.play_sound("home_button_sound.wav")  
         self.stack.setCurrentWidget(self.menu_widget)
         self.menu_widget.show()
         self.section_footer.hide()

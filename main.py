@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt
 from question.loader import QuestionProcessor
 from pages.shared_ui import create_footer_buttons, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel_with_code  # ← your new function
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent,QAudioOutput
 from PyQt5.QtCore import QUrl
 
 class RootWindow(QDialog):
@@ -93,7 +93,13 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.load_style("main_window.qss")
         self.current_theme = "light"  # Initial theme
+        
         self.media_player = QMediaPlayer()
+        self.bg_player = QMediaPlayer()
+        self.bg_player.setVolume(30)
+        self.is_muted = False  # if not already present
+        self.play_background_music()
+
         #self.player = self.setup_background_music()
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
@@ -182,10 +188,34 @@ class MainWindow(QMainWindow):
             self.media_player.play()
         else:
             print(f"[SOUND ERROR] File not found: {filepath}")
+    def play_background_music(self):
+        if self.is_muted:
+            print("[BG MUSIC] Muted.")
+            return
+
+        filepath = os.path.abspath(os.path.join("sounds", "backgroundmusic.mp3"))
+        if os.path.exists(filepath):
+            self.bg_player.setMedia(QMediaContent(QUrl.fromLocalFile(filepath)))
+            self.bg_player.setVolume(30)
+            self.bg_player.play()
+            self.bg_player.mediaStatusChanged.connect(self.loop_background_music)
+            print("[BG MUSIC] Playing background music.")
+        else:
+            print("[BG MUSIC ERROR] File not found:", filepath)
+    def loop_background_music(self, status):
+        if status == QMediaPlayer.EndOfMedia:
+            self.bg_player.setPosition(0)
+            self.bg_player.play()
+
 
     def set_mute(self, state: bool):
         self.is_muted = state
-
+        if hasattr(self, 'bg_player') and self.bg_player is not None:
+            if state:
+                self.bg_player.pause()  # or .stop() if you want to fully stop it
+                print("[BG MUSIC] Paused due to mute.")
+            else:
+                self.play_background_music()
     def toggle_audio(self):
         new_state = not self.is_muted
         self.set_mute(new_state)

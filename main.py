@@ -7,7 +7,9 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from question.loader import QuestionProcessor
 from pages.shared_ui import create_footer_buttons, SettingsDialog
-from pages.ques_functions import load_pages, upload_excel_with_code  # ← your new function
+from pages.ques_functions import load_pages, upload_excel  # ← your new function
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtCore import QUrl
 
 class RootWindow(QDialog):
     def __init__(self):
@@ -86,12 +88,13 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(800, 550) 
         self.current_difficulty = 1  
         self.section_pages = {} 
-
+        self.is_muted = False
         self.language = language
         self.init_ui()
         self.load_style("main_window.qss")
         self.current_theme = "light"  # Initial theme
-
+        self.media_player = QMediaPlayer()
+        #self.player = self.setup_background_music()
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
     def init_ui(self):
@@ -167,10 +170,26 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.section_footer)
         self.section_footer.hide()
     
+    def play_sound(self, filename):
+        
+        if self.is_muted:
+            print("[SOUND] Muted, not playing:", filename)
+            return
+        
+        filepath = os.path.abspath(os.path.join("sounds", filename))
+        if os.path.exists(filepath):
+            self.media_player.setMedia(QMediaContent(QUrl.fromLocalFile(filepath)))
+            self.media_player.play()
+        else:
+            print(f"[SOUND ERROR] File not found: {filepath}")
+
+    def set_mute(self, state: bool):
+        self.is_muted = state
+
     def toggle_audio(self):
-      current = self.audio_button.text()
-      self.audio_button.setText("🔇" if current == "🔊" else "🔊")
-      print("Muted" if current == "🔊" else "Unmuted")
+        new_state = not self.is_muted
+        self.set_mute(new_state)
+        self.audio_button.setText("🔇" if new_state else "🔊")
 
 
     def create_buttons(self):
@@ -286,7 +305,7 @@ class MainWindow(QMainWindow):
                 widget.setParent(None)
 
     def handle_upload(self):
-        upload_excel_with_code(self)
+        upload_excel(self)
 
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)

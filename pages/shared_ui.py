@@ -8,8 +8,46 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
 from question.loader import QuestionProcessor
 from time import time
-
+import random
 DIFFICULTY_LEVELS = ["Very Easy", "Easy", "Medium", "Hard", "Very Hard"]
+
+
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
+
+def create_entry_ui(main_window) -> QWidget:
+    entry_widget = QWidget()
+    layout = QVBoxLayout()
+    layout.setAlignment(Qt.AlignCenter)
+
+    label = QLabel("Click below to start the quiz")
+    label.setFont(QFont("Arial", 24))
+    label.setAlignment(Qt.AlignCenter)
+
+    button = QPushButton("Start")
+    button.setFont(QFont("Arial", 16))
+    button.setFixedSize(200, 50)
+    button.setStyleSheet("background-color: #28a745; color: white; border-radius: 8px;")
+
+    def start_quiz():
+        print("Start button clicked")  # ✅ DEBUG POINT
+        from pages.ques_functions import start_uploaded_quiz
+        start_uploaded_quiz(main_window)
+
+    button.clicked.connect(start_quiz)
+
+    layout.addWidget(label)
+    layout.addSpacing(20)
+    layout.addWidget(button, alignment=Qt.AlignCenter)
+
+    entry_widget.setLayout(layout)
+    return entry_widget
+
+
+
+
+
 
 # settings_manager.py
 class SettingsManager:
@@ -141,16 +179,16 @@ def wrap_center(widget):
     return container
 
 class QuestionWidget(QWidget):
-    def __init__(self, processor):
+    def __init__(self, processor,window=None):
         super().__init__()
         self.processor = processor
         self.answer = None
         self.start_time = time()
-
+        self.max_questions = 10
         self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
-
+        self.main_window = window
         self.init_ui()
 
     def init_ui(self):
@@ -176,7 +214,7 @@ class QuestionWidget(QWidget):
         self.result_label.setAlignment(Qt.AlignCenter)
         self.result_label.setFont(QFont("Arial", 12))
 
-        # 🧱 Assemble the main layout
+        #🧱 Assemble the main layout
         self.layout.addWidget(self.question_area)
         self.layout.addSpacing(20)
         self.layout.addWidget(self.input_box, alignment=Qt.AlignCenter)
@@ -187,12 +225,43 @@ class QuestionWidget(QWidget):
         self.load_new_question()
 
     def load_new_question(self):
+        self.end_button = QPushButton("End Session")
+        self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
+        self.end_button.setFixedWidth(150)
+        self.end_button.clicked.connect(self.end_session)
+        self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
+
+        self.layout.addStretch()
+        
+
+        self.load_new_question()
+    
+
+    def end_session(self):
+        if self.main_window:
+            from main import MainWindow  # Import your section menu window
+            self.main_window.setCentralWidget(MainWindow(self.main_window))
+
+
+
+    
+    def load_new_question(self):
+        if self.processor.total_attempts >= self.max_questions:
+            self.show_final_score()
+            return
         question_text, self.answer = self.processor.get_random_question()
         self.start_time = time()
         self.label.setText(question_text)
         self.input_box.setText("")  # ✨ Clear only the input
         self.result_label.setText("")
-
+    def show_final_score(self):
+                self.result_label.setText(
+                    "🎉 Quiz Finished!"
+                )
+                print("Final Score:", self.processor.correct_answers, "/", self.processor.total_attempts)
+                sound_index = random.randint(1, 3)
+                self.main_window.play_sound(f"finished-{sound_index}.mp3")
+            
     def check_answer(self):
         try:
             user_input = self.input_box.text().strip()
@@ -204,16 +273,49 @@ class QuestionWidget(QWidget):
 
             if correct:
                 self.result_label.setText("✅ Correct!")
+                print("[DEBUG] main_window:", self.main_window)
+                sound_index = random.randint(1, 3)
+                
+                if elapsed < 5:
+                    if self.main_window and callable(getattr(self.main_window, "play_sound", None)):
+                        self.main_window.play_sound(f"excellent-{sound_index}.mp3")
+                elif elapsed < 10:
+                    if self.main_window:
+                        self.main_window.play_sound(f"very-good-{sound_index}.mp3")
+                elif elapsed < 15:
+                    if self.main_window:
+                        self.main_window.play_sound(f"good-{sound_index}.mp3")
+                elif elapsed < 20:
+                    if self.main_window:
+                        self.main_window.play_sound(f"not-bad-{sound_index}.mp3")
+                else:
+                    if self.main_window:
+                        self.main_window.play_sound(f"okay-{sound_index}.mp3")
+
+                self.processor.retry_count = 0
                 self.load_new_question()  # ✨ Just update content
+
             else:
-                self.result_label.setText(f"❌ Wrong. Try again.")
+                self.processor.retry_count += 1
+                sound_index = random.randint(1, 3)
+                if self.processor.retry_count == 1:
+                    self.main_window.play_sound(f"wrong-anwser-{sound_index}.mp3")
+                else:
+                    self.main_window.play_sound(f"wrong-anwser-repeted-{sound_index}.mp3")
+                
+                if self.processor.retry_count < 3:
+                    self.result_label.setText(f"❌ Wrong. Try again ({self.processor.retry_count}/3)")
+                else:
+                    self.result_label.setText("❌ Wrong. Moving to next question.")
+                    self.processor.retry_count = 0
+                    self.load_new_question()
 
         except Exception as e:
             self.result_label.setText(f"Error: {str(e)}")
 
 
 
-def create_dynamic_question_ui(section_name, difficulty_index, back_callback):
+def create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=None):
     container = QWidget()
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignTop)
@@ -221,8 +323,8 @@ def create_dynamic_question_ui(section_name, difficulty_index, back_callback):
 
     processor = QuestionProcessor(section_name, difficulty_index)
     processor.process_file()
-
-    question_widget = QuestionWidget(processor)
+    
+    question_widget = QuestionWidget(processor,window=window)
 
     layout.addWidget(question_widget)
 
@@ -244,7 +346,7 @@ class SettingsDialog(QDialog):
 
         self.difficulty_slider = QSlider(Qt.Horizontal)
         self.difficulty_slider.setMinimum(0)
-        self.difficulty_slider.setMaximum(len(DIFFICULTY_LEVELS) - 1)
+        self.difficulty_slider.setselfMaximum(len(DIFFICULTY_LEVELS) - 1)
         self.difficulty_slider.setSingleStep(1)
         self.difficulty_slider.setPageStep(1)
         self.difficulty_slider.setTickInterval(1)

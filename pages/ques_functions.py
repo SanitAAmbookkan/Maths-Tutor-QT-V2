@@ -1,5 +1,8 @@
-# pages/ques_functions.py
-
+import os, shutil
+import pandas as pd
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QHBoxLayout, QWidget ,QVBoxLayout ,QGridLayout
+from question.loader import get_questions, QuestionProcessor
 from pages.shared_ui import (
     create_colored_widget,
     create_label,
@@ -11,6 +14,7 @@ from pages.shared_ui import (
     create_entry_ui,
     QuestionWidget
 )
+<<<<<<< HEAD
 from question.loader import get_questions,QuestionProcessor
 import os, shutil
 import pandas as pd
@@ -21,12 +25,29 @@ from PyQt5.QtCore import Qt
 from language.language import tr
 
 
+=======
+>>>>>>> sanit
 
 def load_pages(section_name, back_callback, difficulty_index, main_window=None):
     page = create_colored_widget("#e0f7fa")
+<<<<<<< HEAD
 
     if section_name.lower() == "operations":
         title = create_label(tr("Choose an Operation"), font_size=22, bold=True)
+=======
+    widgets = []
+    # --- 🏠 Back button at top-left ---
+    top_bar = QWidget()
+    top_layout = QHBoxLayout(top_bar)
+    top_layout.setContentsMargins(0, 0, 0, 0)
+    top_layout.addWidget(create_back_button(back_callback), alignment=Qt.AlignLeft)
+    top_layout.addStretch()
+    widgets.append(top_bar)
+    
+    # 👉 Custom logic for "Operations"
+    if section_name.lower() == "operations":
+        title = create_label("Choose an Operation", font_size=22, bold=True)
+>>>>>>> sanit
         title.setAlignment(Qt.AlignCenter)
 
         grid = QGridLayout()
@@ -35,8 +56,12 @@ def load_pages(section_name, back_callback, difficulty_index, main_window=None):
         operations = ["Addition", "Subtraction", "Multiplication", "Division", "Remainder", "Percentage"]
 
         for i, sub in enumerate(operations):
+<<<<<<< HEAD
             translated=tr(sub)
             btn = create_menu_button(translated, lambda _, s=sub: main_window.load_section(s))
+=======
+            btn = create_menu_button(sub, lambda _, s=sub: main_window.load_section(s))
+>>>>>>> sanit
             btn.setFixedSize(180, 60)
             grid.addWidget(btn, i // 2, i % 2)  # 2 columns
 
@@ -57,12 +82,26 @@ def load_pages(section_name, back_callback, difficulty_index, main_window=None):
     # ✅ For all other sections
     return create_dynamic_question_ui(section_name, difficulty_index, back_callback, window=main_window)
 
+    #widgets.append(create_back_button(back_callback))
+    
+     # --- 🔊 Mute button at bottom-left ---
+    bottom_bar = QWidget()
+    bottom_layout = QHBoxLayout(bottom_bar)
+    bottom_layout.setContentsMargins(0, 0, 0, 0)
+    bottom_layout.addWidget(create_audio_toggle_button(), alignment=Qt.AlignLeft)
+    bottom_layout.addStretch()
+    widgets.append(bottom_bar)
+    
+uploaded_df = None
 
+<<<<<<< HEAD
 
 
 
 uploaded_df = None
 
+=======
+>>>>>>> sanit
 def upload_excel(parent_widget):
     
     file_path, _ = QFileDialog.getOpenFileName(parent_widget, "Select Excel File", "", "Excel Files (*.xlsx)")

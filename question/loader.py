@@ -3,9 +3,8 @@ import pandas as pd
 import random
 
 
-
-def get_questions(section_name, difficulty_index):
-    processor = QuestionProcessor(section_name.lower(), difficulty_index)
+def get_questions(section_name):
+    processor = QuestionProcessor(section_name)
     processor.process_file()
     return [processor.get_random_question()]
 
@@ -74,6 +73,8 @@ class QuestionProcessor:
         # Replace placeholders in the question string (col 0)
         #question_template = str(self.df.iloc[self.rowIndex, 0])
         question_template = str(self.df.iloc[self.rowIndex]["question"])
+        #question_template = str(self.df.iloc[self.rowIndex, 0])
+        question_template = str(self.df.iloc[self.rowIndex]["question"])
         for i, var in enumerate(self.variables):
             question_template = question_template.replace(f"{{{var}}}", str(self.oprands[i]))
  
@@ -88,14 +89,26 @@ class QuestionProcessor:
         #answer = int(self.Pr_answer) if self.Pr_answer is not None else None
         
 
+        try:
+            #answer = int(float(self.Pr_answer))
+            answer = round(float(self.Pr_answer)) if self.Pr_answer is not None else None
+        except (TypeError, ValueError):
+            print(f"[ERROR] Invalid answer: {self.Pr_answer}")
+            answer = None
+        #answer = int(self.Pr_answer) if self.Pr_answer is not None else None
+        
+
  
         print(f"Question shown: {question_template}")
         print(f"Answer calculated: {answer}")
         return question_template, answer
+    
     def extractAnswer(self):
         #answer_equation = self.getAnswer(self.rowIndex, 4)  # assuming column 4 contains the formula
         answer_equation = self.getAnswer(self.rowIndex, "equation")
 
+        #answer_equation = self.getAnswer(self.rowIndex, 4)  # assuming column 4 contains the formula
+        answer_equation = self.getAnswer(self.rowIndex, "equation")
         final_answer = self.solveEquation(answer_equation)
         print("finalAns:", final_answer)
         self.Pr_answer = str(final_answer)
@@ -141,6 +154,20 @@ class QuestionProcessor:
  
  
     def extractType(self, inputRange):
+        try:
+            if "," in inputRange:
+                return random.choice(list(map(int, inputRange.split(","))))
+            elif ":" in inputRange:
+                a, b = map(int, inputRange.split(":"))
+                return random.randint(a, b)
+            elif ";" in inputRange:
+                a, b, c = map(int, inputRange.split(";"))
+                return a * random.randint(b, c)
+            return int(inputRange)
+        except Exception as e:
+            print("[ERROR] Invalid inputRange format:", inputRange, e)
+            return 0  # fallback
+
         try:
             if "," in inputRange:
                 return random.choice(list(map(int, inputRange.split(","))))

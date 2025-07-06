@@ -20,6 +20,7 @@ QDialog {
     color:rgb(231, 233, 238);
     margin-bottom: 15px;
     margin-top:8px;
+    margin-left: 0px;
 }
 
 .combo-box {
@@ -35,6 +36,7 @@ QDialog {
 
 .combo-box:hover {
     border-color: rgb(0, 0, 0);
+    color: grey;
 }
 .combo-box::drop-down {
     subcontrol-origin: padding;
@@ -43,6 +45,7 @@ QDialog {
     #border-left: 1px solid white;
     margin-top: 4a5568px;
     margin-bottom: 4px;
+    color: grey;
 }
 
 .combo-box::down-arrow {
@@ -60,6 +63,7 @@ QDialog {
 .checkbox {
     font-size: 13px;
     font-family: "Poppins";
+    font-color: #ffffff;
     spacing: 8px;
     margin-top: 12px;
     color: #cccccc;
@@ -93,21 +97,6 @@ QDialog {
 .primary-button:hover {
     background-color: #555555;
     color:  #555555;
-}
-
-.danger-button {
-    background-color:rgb(53, 56, 55);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: 600;
-    font-family: "Poppins";
-    min-width: 100px;
-}
-
-.danger-button:hover {
-    background-color:rgb(175, 38, 136);
 }
 
 .combo-box::drop-down {

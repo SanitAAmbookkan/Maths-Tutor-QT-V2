@@ -2,14 +2,22 @@ import sys, os
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout,QStackedWidget, QSizePolicy
-)
-from PyQt5.QtCore import Qt
-from question.loader import QuestionProcessor
-from pages.shared_ui import create_footer_buttons, SettingsDialog
-from pages.ques_functions import load_pages, upload_excel  # ← your new function
+    QWidget, QGridLayout,QInputDialog, QFileDialog, QMessageBox, QSizePolicy, QStackedWidget, QShortcut)
+from PyQt5.QtCore import Qt, QUrl 
+from PyQt5.QtGui import QKeySequence
+from pages.ques_functions import load_pages, upload_excel # ← your new function
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from PyQt5.QtCore import QUrl
+from question.loader import QuestionProcessor
+from pages.shared_ui import (
+    create_theme_toggle_button,
+    apply_theme, 
+    create_footer_buttons,
+    SettingsDialog,
+    toggle_audio,
+    create_audio_toggle_button
+)
+
+
 
 
 
@@ -41,16 +49,15 @@ class RootWindow(QDialog):
 
 
         self.remember_check = QCheckBox("Remember my selection")
-        self.remember_check.setChecked(False)
+        
 
 
         self.ok_button = QPushButton("Continue")
         self.ok_button.setDefault(True)
-        self.ok_button.setAutoDefault(True)
-        self.ok_button.setFocus()
+        
 
         self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.setAutoDefault(False)
+        
         self.cancel_button.setShortcut(Qt.Key_Escape)
 
 
@@ -72,19 +79,11 @@ class RootWindow(QDialog):
  
         self.setLayout(layout)
         self.cancel_button.clicked.connect(self.reject)
-        self.ok_button.clicked.connect(self.handle_continue)
-
-
-
-    
-
-
+        self.ok_button.clicked.connect(self.accept)
     def handle_continue(self):
         selected = self.language_combo.currentText()
         language.selected_language = selected  # ✅ Now this will work
-        self.accept()
-
-        
+        self.accept()   
  
     def create_line(self):
         line = QFrame()
@@ -108,53 +107,50 @@ class MainWindow(QMainWindow):
         self.current_difficulty = 1  
         self.section_pages = {} 
         self.is_muted = False
+        
+        self.exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
+        self.exit_shortcut.activated.connect(self.confirm_exit)
+
         self.language = language
+        self.current_theme = "light"  # default when app starts
+        self.media_player = QMediaPlayer()
         self.init_ui()
         self.load_style("main_window.qss")
-        self.current_theme = "light"  # Initial theme
-        self.media_player = QMediaPlayer()
-        #self.player = self.setup_background_music()
+        
+
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
+   
     def init_ui(self):
         self.central_widget = QWidget()
         self.central_widget.setProperty("class", "central-widget")
-        self.central_widget.setProperty("theme", "light")
+        self.central_widget.setProperty("theme", self.current_theme)
+
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
 
-        # Track current theme
-        self.current_theme = "light"
+        
         
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
     
-         # Top bar for theme toggle
+        self.theme_button = create_theme_toggle_button(self.toggle_theme)
+        apply_theme(self.central_widget, self.current_theme, self.theme_button)
+
         top_bar = QHBoxLayout()
-        top_bar.setContentsMargins(0, 0, 0, 0)
-
-         # Theme button (🌙 for light, ☀️ for dark)
-        self.theme_button = QPushButton("🌙")
-        self.theme_button.setFixedSize(40, 40)
-        self.theme_button.setToolTip("Toggle Light/Dark Theme")
-        self.theme_button.clicked.connect(self.toggle_theme)
-
-        top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
+        top_bar.addWidget(self.theme_button)
         top_bar.addStretch()
-
         menu_layout.addLayout(top_bar)
 
-        
-        title = QLabel(tr("welcome")) #welcome to maths tutor 
 
-
+        title = QLabel("Welcome to Maths Tutor!")
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
  
-        subtitle = QLabel(tr("ready").format(lang=self.language))
+        subtitle = QLabel(f"Ready to learn in {self.language}!")
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
  
@@ -164,22 +160,21 @@ class MainWindow(QMainWindow):
 
         menu_layout.addLayout(self.create_buttons())
         menu_layout.addStretch()
-        # Bottom-left audio toggle
+        
+        #audio
         bottom_layout = QHBoxLayout()
-        bottom_layout.setContentsMargins(0, 0, 0, 0)
+        audio_button = create_audio_toggle_button()
+        bottom_layout.addWidget(audio_button, alignment=Qt.AlignLeft)
 
-        self.audio_button = QPushButton("🔊")
-        self.audio_button.setObjectName("audio-button")
-        self.audio_button.setFixedSize(50, 50)
-        self.audio_button.setToolTip("Toggle Mute/Unmute")
-        self.audio_button.clicked.connect(self.toggle_audio)
-
-        bottom_layout.addWidget(self.audio_button, alignment=Qt.AlignLeft)
+        # Optional: auto focus for immediate Enter key support
+        audio_button.setFocus()
         bottom_layout.addStretch()
-
         menu_layout.addLayout(bottom_layout)
 
         self.menu_widget.setLayout(menu_layout)
+        self.main_layout.addWidget(self.menu_widget)
+        
+       
 
         self.stack = QStackedWidget()
         self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -207,11 +202,26 @@ class MainWindow(QMainWindow):
 
     def set_mute(self, state: bool):
         self.is_muted = state
+        
+    def apply_theme_to_widgets(self, theme):
+        self.central_widget.setProperty("theme", theme)
+        self.central_widget.style().unpolish(self.central_widget)
+        self.central_widget.style().polish(self.central_widget)
 
+    # Also apply theme to nested widgets
+        widgets = self.central_widget.findChildren(QWidget)
+        for widget in widgets:
+            widget.setProperty("theme", theme)
+            widget.style().unpolish(widget)
+            widget.style().polish(widget)
+
+        self.theme_button.setText("☀️" if theme == "dark" else "🌙")
+  
+    
     def toggle_audio(self):
-        new_state = not self.is_muted
-        self.set_mute(new_state)
-        self.audio_button.setText("🔇" if new_state else "🔊")
+      current = self.audio_button.text()
+      self.audio_button.setText("🔇" if current == "🔊" else "🔊")
+      print("Muted" if current == "🔊" else "Unmuted")
 
 
     def create_buttons(self):
@@ -223,8 +233,7 @@ class MainWindow(QMainWindow):
         self.menu_buttons = [] 
         
         for i, name in enumerate(sections):
-            translated_name = tr(name)
-            button = QPushButton(translated_name)
+            button = QPushButton(name)
 
             # Set a good preferred base size
             button.setMinimumSize(160, 50)
@@ -232,7 +241,7 @@ class MainWindow(QMainWindow):
 
              # Use Preferred policy to allow controlled resizing
             button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-
+            button.setProperty("theme", self.current_theme)
             button.setProperty("class", "menu-button")
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
 
@@ -244,10 +253,8 @@ class MainWindow(QMainWindow):
         return button_grid 
 
     def create_main_footer_buttons(self):
-        buttons = ["Upload", "Help", "About", "Settings"]
-        translated = [tr(b) for b in buttons]
         return create_footer_buttons(
-            translated,
+            ["Upload", "Help", "About", "Settings"],
             callbacks={
                 "Upload": self.handle_upload,
                 "Settings": self.handle_settings
@@ -265,8 +272,6 @@ class MainWindow(QMainWindow):
         )
 
     def handle_settings(self):
-        
-
         dialog = SettingsDialog(
             parent=self,
             initial_difficulty=getattr(self, "current_difficulty", 1)
@@ -330,10 +335,14 @@ class MainWindow(QMainWindow):
             widget = self.main_layout.itemAt(i).widget()
             if widget:
                 widget.setParent(None)
-
+                
+       
+    
     def handle_upload(self):
         upload_excel(self)
 
+
+    
     def load_style(self, qss_file):
         path = os.path.join("styles", qss_file)
         if os.path.exists(path):
@@ -342,10 +351,36 @@ class MainWindow(QMainWindow):
 
     def toggle_theme(self):
         self.current_theme = "dark" if self.current_theme == "light" else "light"
-        self.central_widget.setProperty("theme", self.current_theme)
-        self.central_widget.style().unpolish(self.central_widget)
-        self.central_widget.style().polish(self.central_widget)
-        self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
+        apply_theme(self.central_widget, self.current_theme, self.theme_button)
+
+        # Optional: also apply to section pages
+        for page in self.section_pages.values():
+            page.setProperty("theme", self.current_theme)
+            page.style().unpolish(page)
+            page.style().polish(page)
+
+ 
+    
+    
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_M:
+           audio_button = self.findChild(QPushButton, "audioButton")
+           if audio_button:
+              toggle_audio(audio_button) 
+            
+    def confirm_exit(self):
+        reply = QMessageBox.question(
+            self,
+            "Exit Application",
+            "Are you sure you want to exit the Maths Tutor?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            self.close()    
+    
+
 
 
 if __name__ == "__main__":

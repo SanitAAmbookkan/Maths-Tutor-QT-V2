@@ -346,7 +346,7 @@ class SettingsDialog(QDialog):
 
         self.difficulty_slider = QSlider(Qt.Horizontal)
         self.difficulty_slider.setMinimum(0)
-        self.difficulty_slider.setselfMaximum(len(DIFFICULTY_LEVELS) - 1)
+        self.difficulty_slider.setMaximum(len(DIFFICULTY_LEVELS) - 1)
         self.difficulty_slider.setSingleStep(1)
         self.difficulty_slider.setPageStep(1)
         self.difficulty_slider.setTickInterval(1)

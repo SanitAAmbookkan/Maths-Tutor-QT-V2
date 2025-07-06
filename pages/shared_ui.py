@@ -242,7 +242,7 @@ class QuestionWidget(QWidget):
         print("[BG MUSIC] Stopped due to end session.")
         if self.main_window:
             from main import MainWindow  # Import your section menu window
-            self.main_window.setCentralWidget(MainWindow(self.main_window))
+            self.main_window.back_to_main_menu()
 
 
 

@@ -10,7 +10,8 @@ from pages.shared_ui import create_footer_buttons, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel  # ← your new function
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
-from tts.engine import TextToSpeech
+
+
 
 
 
@@ -125,7 +126,7 @@ class MainWindow(QMainWindow):
          # Top bar for theme toggle
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
-        self.tts = TextToSpeech()  #  Add this line to initialize TTS
+        #self.tts = TextToSpeech()  #  Add this line to initialize TTS
 
         # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
@@ -202,7 +203,7 @@ class MainWindow(QMainWindow):
 
     def toggle_audio(self):
           new_state = not self.is_muted
-        self.set_mute(new_state)
+          self.set_mute(new_state)
           self.audio_button.setText("🔇" if new_state else "🔊")
           self.tts.speak(f"{self.audio_button.capitalize()} theme activated")
 

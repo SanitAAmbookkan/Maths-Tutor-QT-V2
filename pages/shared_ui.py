@@ -8,7 +8,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
 from question.loader import QuestionProcessor
 from time import time
-import randomfrom tts.engine import TextToSpeech
+import random 
+from tts.engine import TextToSpeech
 
 
 DIFFICULTY_LEVELS = ["Simple", "Easy", "Medium", "Hard", "Challenging"]

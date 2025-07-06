@@ -1,23 +1,23 @@
-from PyQt5.QtWidgets import QHBoxLayout, QWidget
+import os, shutil
+import pandas as pd
 from PyQt5.QtCore import Qt
-
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QHBoxLayout, QWidget ,QVBoxLayout ,QGridLayout
+from question.loader import get_questions, QuestionProcessor
 from pages.shared_ui import (
     create_colored_widget,
     create_label,
-    create_vertical_layout,
-    create_back_button,
     create_menu_button,
-    create_answer_input,
-    wrap_center,
-    create_audio_toggle_button
-    
+    create_back_button,
+    create_vertical_layout,
+    create_dynamic_question_ui,
+    create_dynamic_question_ui,
+    create_entry_ui,
+    QuestionWidget
 )
-from question.loader import get_questions
 
 
-def load_pages(section_name, back_callback, main_window=None):
+def load_pages(section_name, back_callback,difficulty_index, main_window=None):
     page = create_colored_widget("#e0f7fa")
-
     widgets = []
     # --- 🏠 Back button at top-left ---
     top_bar = QWidget()
@@ -29,24 +29,35 @@ def load_pages(section_name, back_callback, main_window=None):
     
     # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
-        widgets.append(create_label("Choose an Operation", font_size=20))
-        for sub in ["Addition", "Subtraction", "Multiplication", "Division","Remainder","Percentage"]:
-            widgets.append(
-                create_menu_button(
-                    sub,
-                    lambda _, s=sub: main_window.load_section(s)
-                )
-            )
-        #widgets.append(create_back_button(back_callback))
-        #page.setLayout(create_vertical_layout(widgets))
+        title = create_label("Choose an Operation", font_size=22, bold=True)
+        title.setAlignment(Qt.AlignCenter)
+
+        grid = QGridLayout()
+        grid.setSpacing(20)
+
+        operations = ["Addition", "Subtraction", "Multiplication", "Division", "Remainder", "Percentage"]
+
+        for i, sub in enumerate(operations):
+            btn = create_menu_button(sub, lambda _, s=sub: main_window.load_section(s))
+            btn.setFixedSize(180, 60)
+            grid.addWidget(btn, i // 2, i % 2)  # 2 columns
+
+        wrapper = QWidget()
+        wrapper.setLayout(grid)
+
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignTop)
+        layout.addWidget(title)
+        layout.addSpacing(20)
+        layout.addWidget(wrapper)
+        layout.addSpacing(30)
+        layout.addWidget(create_back_button(back_callback), alignment=Qt.AlignCenter)
+
+        page.setLayout(layout)
         return page
 
-    # 👉 Default logic for all other sections
-    widgets.append(create_label(f"{section_name} Section", font_size=20))
-    questions = get_questions(section_name)
-    for q in questions:
-        widgets.append(create_label(q, font_size=14, bold=False))
-        widgets.append(wrap_center(create_answer_input()))  # 👈 Call your custom input function here
+    # ✅ For all other sections, use dynamic question UI
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback)
 
     #widgets.append(create_back_button(back_callback))
     
@@ -57,8 +68,57 @@ def load_pages(section_name, back_callback, main_window=None):
     bottom_layout.addWidget(create_audio_toggle_button(), alignment=Qt.AlignLeft)
     bottom_layout.addStretch()
     widgets.append(bottom_bar)
+    
+uploaded_df = None
 
-    page.setLayout(create_vertical_layout(widgets))
-    print(f"[QUESTION SHOWN] {questions}")
-    return page
+def upload_excel(parent_widget):
+    
+    file_path, _ = QFileDialog.getOpenFileName(parent_widget, "Select Excel File", "", "Excel Files (*.xlsx)")
+    if not file_path:
+        return
+
+ 
+    df = pd.read_excel(file_path)
+    global uploaded_df
+    uploaded_df = df
+
+    print(uploaded_df)
+  
+
+    required = {"question", "operands", "equation"}
+    if not required.issubset(df.columns):
+        QMessageBox.critical(parent_widget, "Invalid File", "Excel must have columns: type, input, output")
+        return
+
+    #os.makedirs(exist_ok=True)
+        #dest_path = os.path.join( "question.xlsx")
+        #shutil.copyfile(file_path, dest_path)
+    QMessageBox.information(parent_widget, "Success", "Questions uploaded successfully!")
+    main_window=parent_widget
+    entry_ui = create_entry_ui(main_window)
+    main_window.setCentralWidget(entry_ui)
+    
+
+
+
+
+def load_entry_page(main_window):
+        entry_ui = create_entry_ui(main_window)
+        main_window.setCentralWidget(entry_ui)
+
+  # global storage
+
+
+def start_uploaded_quiz(main_window):
+    global uploaded_df
+    if uploaded_df is None:
+        print('no uploaded_df')
+        return
+
+    processor = QuestionProcessor("custom", 0)  # pass dummy type and difficulty
+    print('dummy value passed to init of processor')
+    processor.df = uploaded_df  # manually inject uploaded data
+
+    question_widget = QuestionWidget(processor, window=main_window)
+    main_window.setCentralWidget(question_widget)
 

@@ -1,13 +1,39 @@
 @"
-# Python cache
+# Python cache and compiled files
 __pycache__/
 *.py[cod]
-*.pyc
 *.pyo
 *.pyd
 
-# Environments
+# Virtual environments
 .env/
 .venv/
 venv/
+
+# Editor & IDE folders
+.vscode/
+.idea/
+*.code-workspace
+
+# Test and coverage tools
+.pytest_cache/
+.coverage
+.cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Backup & swap files
+*.bak
+*.swp
+*.tmp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints/
 "@ | Out-File -FilePath .gitignore -Encoding utf8

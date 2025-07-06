@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import random
 
+
 class QuestionProcessor:
     def __init__(self, questionType):
         self.questionType = questionType

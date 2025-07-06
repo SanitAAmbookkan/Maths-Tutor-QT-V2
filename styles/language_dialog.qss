@@ -99,21 +99,6 @@ QDialog {
     color:  #555555;
 }
 
-.danger-button {
-    background-color:rgb(53, 56, 55);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: 600;
-    font-family: "Poppins";
-    min-width: 100px;
-}
-
-.danger-button:hover {
-    background-color:rgb(175, 38, 136);
-}
-
 .combo-box::drop-down {
     subcontrol-origin: padding;
     subcontrol-position: top right;

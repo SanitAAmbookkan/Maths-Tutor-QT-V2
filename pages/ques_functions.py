@@ -19,6 +19,8 @@ import pandas as pd
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog,QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,QPushButton, QLabel, QSizePolicy
 from PyQt5.QtCore import Qt
 
+from language.language import tr
+
 
 
 def load_pages(section_name, back_callback, difficulty_index,
@@ -30,8 +32,7 @@ def load_pages(section_name, back_callback, difficulty_index,
  
     # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
-        page = create_colored_widget("#e0f7fa")
-        title = create_label("Choose an Operation", font_size=22, bold=True)
+        title = create_label(tr("Choose an Operation"), font_size=22, bold=True)
         title.setAlignment(Qt.AlignCenter)
 
         grid = QGridLayout()
@@ -40,7 +41,8 @@ def load_pages(section_name, back_callback, difficulty_index,
         operations = ["Addition", "Subtraction", "Multiplication", "Division", "Remainder", "Percentage"]
 
         for i, sub in enumerate(operations):
-            btn = create_menu_button(sub, lambda _, s=sub: main_window.load_section(s))
+            translated=tr(sub)
+            btn = create_menu_button(translated, lambda _, s=sub: main_window.load_section(s))
             btn.setFixedSize(180, 60)
             grid.addWidget(btn, i // 2, i % 2)  # 2 columns
 

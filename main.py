@@ -12,6 +12,13 @@ from pages.ques_functions import load_pages, upload_excel   # ← your new funct
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent,QAudioOutput
 from PyQt5.QtCore import QUrl
 
+
+
+from language import language 
+from language.language import tr
+
+
+
 class RootWindow(QDialog):
     def __init__(self,minimal=False):
         super().__init__()
@@ -66,7 +73,19 @@ class RootWindow(QDialog):
  
         self.setLayout(layout)
         self.cancel_button.clicked.connect(self.reject)
-        self.ok_button.clicked.connect(self.accept)
+        self.ok_button.clicked.connect(self.handle_continue)
+
+
+
+    
+
+
+    def handle_continue(self):
+        selected = self.language_combo.currentText()
+        language.selected_language = selected  # ✅ Now this will work
+        self.accept()
+
+        
  
     def create_line(self):
         line = QFrame()
@@ -136,11 +155,14 @@ class MainWindow(QMainWindow):
 
         menu_layout.addLayout(top_bar)
 
-        title = QLabel("Welcome to Maths Tutor!")
+        
+        title = QLabel(tr("welcome")) #welcome to maths tutor 
+
+
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
  
-        subtitle = QLabel(f"Ready to learn in {self.language}!")
+        subtitle = QLabel(tr("ready").format(lang=self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
  
@@ -233,7 +255,8 @@ class MainWindow(QMainWindow):
         self.menu_buttons = [] 
         
         for i, name in enumerate(sections):
-            button = QPushButton(name)
+            translated_name = tr(name)
+            button = QPushButton(translated_name)
 
             # Set a good preferred base size
             button.setMinimumSize(160, 50)
@@ -253,8 +276,10 @@ class MainWindow(QMainWindow):
         return button_grid 
 
     def create_main_footer_buttons(self):
+        buttons = ["Upload", "Help", "About", "Settings"]
+        translated = [tr(b) for b in buttons]
         return create_footer_buttons(
-            ["Upload", "Help", "About", "Settings"],
+            translated,
             callbacks={
                 "Upload": self.handle_upload,
                 "Settings": self.handle_settings
@@ -262,8 +287,10 @@ class MainWindow(QMainWindow):
     )
 
     def create_section_footer(self):
+        buttons=["Help", "About", "Settings"]
+        translated=[tr(b) for b in buttons]
         return create_footer_buttons(
-            ["Help", "About", "Settings"],
+            translated,
             callbacks={
                 "Settings": self.handle_settings
             }

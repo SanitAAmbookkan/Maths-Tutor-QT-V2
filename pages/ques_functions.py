@@ -2,7 +2,7 @@ import os, shutil
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QHBoxLayout, QWidget ,QVBoxLayout ,QGridLayout
-from question.loader import get_questions, QuestionProcessor
+from question.loader import  QuestionProcessor
 from pages.shared_ui import (
     create_colored_widget,
     create_label,
@@ -15,8 +15,25 @@ from pages.shared_ui import (
     QuestionWidget
 )
 
-def load_pages(section_name, back_callback, difficulty_index, main_window=None):
+from question.loader import QuestionProcessor
+import os, shutil
+import pandas as pd
+
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog,QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,QPushButton, QLabel, QSizePolicy
+from PyQt5.QtCore import Qt
+
+from language.language import tr
+
+
+
+def load_pages(section_name, back_callback, difficulty_index,
+               main_window=None):
+
     page = create_colored_widget("#e0f7fa")
+ 
+    widgets = []
+ 
+    # 👉 Custom logic for "Operations"
     widgets = []
     # --- 🏠 Back button at top-left ---
     top_bar = QWidget()
@@ -56,8 +73,13 @@ def load_pages(section_name, back_callback, difficulty_index, main_window=None):
         page.setLayout(layout)
         return page
 
-    # ✅ For all other sections
-    return create_dynamic_question_ui(section_name, difficulty_index, back_callback, window=main_window)
+    # ✅ For other sections
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
+
+
+
+
+
 
     #widgets.append(create_back_button(back_callback))
     
@@ -78,6 +100,7 @@ uploaded_df = None
 
 def upload_excel(parent_widget):
     
+
     file_path, _ = QFileDialog.getOpenFileName(parent_widget, "Select Excel File", "", "Excel Files (*.xlsx)")
     if not file_path:
         return
@@ -92,7 +115,7 @@ def upload_excel(parent_widget):
 
     required = {"question", "operands", "equation"}
     if not required.issubset(df.columns):
-        QMessageBox.critical(parent_widget, "Invalid File", "Excel must have columns: type, input, output")
+        QMessageBox.critical(parent_widget, "Invalid File", "Excel must have columns titled: question, operands, equation")
         return
 
     #os.makedirs(exist_ok=True)

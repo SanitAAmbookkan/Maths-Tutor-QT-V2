@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
         self.theme_button.setAccessibleName("")
-        self.theme_button.setAccessibleDescription(f"Welcome to maths tutor. Ready to learn in {self.language}! . Press to switch to dark theme")
+        self.theme_button.setAccessibleDescription(tr(f"Welcome to maths tutor. Ready to learn in {self.language}! . Press to switch to dark theme"))
 
         top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
         top_bar.addStretch()
@@ -241,9 +241,6 @@ class MainWindow(QMainWindow):
         button_grid.setContentsMargins(10, 10, 10, 10)
 
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
-        common_description = (
-            "This is a learning section with math problems. Press Enter to start practicing."
-            )
         self.menu_buttons = []
 
         for i, name in enumerate(sections):
@@ -258,10 +255,6 @@ class MainWindow(QMainWindow):
 
             # Set accessible name for all buttons
             button.setAccessibleName(translated_name)
-
-            # Set accessible description only for the first button
-            if i == 0:
-                button.setAccessibleDescription(common_description)
 
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
 

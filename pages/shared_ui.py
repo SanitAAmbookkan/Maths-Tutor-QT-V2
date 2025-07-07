@@ -229,28 +229,7 @@ class QuestionWidget(QWidget):
         self.layout.addWidget(self.result_label)
         self.layout.addStretch()
 
-        self.end_button = QPushButton("End Session")
-        self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
-        self.end_button.setFixedWidth(150)
-        self.end_button.clicked.connect(self.end_session)
-        self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
-
-        self.layout.addStretch()
-
         self.load_new_question()
-
-
-    #def load_new_question(self):
-        #self.end_button = QPushButton("End Session")
-        #self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
-        #self.end_button.setFixedWidth(150)
-        #self.end_button.clicked.connect(self.end_session)
-        #self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
-
-        #self.layout.addStretch()
-        
-
-        #self.load_new_question()
     
 
     def end_session(self):

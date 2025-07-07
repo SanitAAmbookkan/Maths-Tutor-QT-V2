@@ -83,6 +83,7 @@ class RootWindow(QDialog):
     def handle_continue(self):
         selected = self.language_combo.currentText()
         language.selected_language = selected  # ✅ Now this will work
+        print(selected)
         self.accept()
 
         
@@ -103,6 +104,8 @@ class RootWindow(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self, language="English"):
         super().__init__()
+        
+
         self.setWindowTitle(f"Maths Tutor - {language}")
         self.resize(900, 600)
         self.setMinimumSize(800, 550) 
@@ -111,6 +114,8 @@ class MainWindow(QMainWindow):
         self.is_muted = False
         self.language = language
         self.init_ui()
+        
+
         self.load_style("main_window.qss")
         self.current_theme = "light"  # Initial theme
 
@@ -124,6 +129,7 @@ class MainWindow(QMainWindow):
         #self.player = self.setup_background_music()
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
+
     def init_ui(self):
         self.central_widget = QWidget()
         self.central_widget.setProperty("class", "central-widget")
@@ -143,12 +149,23 @@ class MainWindow(QMainWindow):
          # Top bar for theme toggle
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
+        
 
-         # Theme button (🌙 for light, ☀️ for dark)
+        # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
         self.theme_button.setFixedSize(40, 40)
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
+        self.theme_button.setAccessibleName("")
+
+        from language.language import translations
+        desc = f"{translations[self.language]['welcome']} {translations[self.language]['ready'].format(lang=self.language)}"
+        self.theme_button.setAccessibleDescription(desc)
+
+
+
+
+
 
         top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
         top_bar.addStretch()
@@ -165,7 +182,7 @@ class MainWindow(QMainWindow):
         subtitle = QLabel(tr("ready").format(lang=self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
- 
+       
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
@@ -241,10 +258,21 @@ class MainWindow(QMainWindow):
             else:
                 self.play_background_music()
     def toggle_audio(self):
-        new_state = not self.is_muted
-        self.set_mute(new_state)
-        self.audio_button.setText("🔇" if new_state else "🔊")
+          new_state = not self.is_muted
+          self.set_mute(new_state)
+          self.audio_button.setText("🔇" if new_state else "🔊")
+          self.tts.speak(f"{self.audio_button.capitalize()} theme activated")
 
+    def toggle_audio(self):
+        current = self.audio_button.text()
+        new_state = "🔇" if current == "🔊" else "🔊"
+        self.audio_button.setText(new_state)
+
+        # Speak appropriate message
+        message = "Audio muted" if new_state == "🔇" else "Audio unmuted"
+        self.tts.speak(message)
+
+      
 
     def create_buttons(self):
         button_grid = QGridLayout()
@@ -252,28 +280,29 @@ class MainWindow(QMainWindow):
         button_grid.setContentsMargins(10, 10, 10, 10)
 
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
-        self.menu_buttons = [] 
-        
+        self.menu_buttons = []
+
         for i, name in enumerate(sections):
             translated_name = tr(name)
             button = QPushButton(translated_name)
 
             # Set a good preferred base size
             button.setMinimumSize(160, 50)
-            button.setMaximumSize(220, 60)  # Optional: Prevent growing too big
-
-             # Use Preferred policy to allow controlled resizing
+            button.setMaximumSize(220, 60)
             button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-
             button.setProperty("class", "menu-button")
+
+            # Set accessible name for all buttons
+            button.setAccessibleName(translated_name)
+
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
 
             self.menu_buttons.append(button)
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
 
-            
-        return button_grid 
+        return button_grid
+
 
     def create_main_footer_buttons(self):
         buttons = ["Upload", "Help", "About", "Settings"]
@@ -379,6 +408,8 @@ class MainWindow(QMainWindow):
         self.central_widget.style().unpolish(self.central_widget)
         self.central_widget.style().polish(self.central_widget)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
+        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
+      
 
 
 if __name__ == "__main__":

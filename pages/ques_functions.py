@@ -14,27 +14,9 @@ from pages.shared_ui import (
     create_entry_ui,
     QuestionWidget
 )
-<<<<<<< HEAD
-from question.loader import get_questions,QuestionProcessor
-import os, shutil
-import pandas as pd
-
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog,QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,QPushButton, QLabel, QSizePolicy
-from PyQt5.QtCore import Qt
-
-from language.language import tr
-
-
-=======
->>>>>>> sanit
 
 def load_pages(section_name, back_callback, difficulty_index, main_window=None):
     page = create_colored_widget("#e0f7fa")
-<<<<<<< HEAD
-
-    if section_name.lower() == "operations":
-        title = create_label(tr("Choose an Operation"), font_size=22, bold=True)
-=======
     widgets = []
     # --- 🏠 Back button at top-left ---
     top_bar = QWidget()
@@ -47,7 +29,6 @@ def load_pages(section_name, back_callback, difficulty_index, main_window=None):
     # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
         title = create_label("Choose an Operation", font_size=22, bold=True)
->>>>>>> sanit
         title.setAlignment(Qt.AlignCenter)
 
         grid = QGridLayout()
@@ -56,12 +37,8 @@ def load_pages(section_name, back_callback, difficulty_index, main_window=None):
         operations = ["Addition", "Subtraction", "Multiplication", "Division", "Remainder", "Percentage"]
 
         for i, sub in enumerate(operations):
-<<<<<<< HEAD
             translated=tr(sub)
             btn = create_menu_button(translated, lambda _, s=sub: main_window.load_section(s))
-=======
-            btn = create_menu_button(sub, lambda _, s=sub: main_window.load_section(s))
->>>>>>> sanit
             btn.setFixedSize(180, 60)
             grid.addWidget(btn, i // 2, i % 2)  # 2 columns
 
@@ -94,14 +71,11 @@ def load_pages(section_name, back_callback, difficulty_index, main_window=None):
     
 uploaded_df = None
 
-<<<<<<< HEAD
 
 
 
 uploaded_df = None
 
-=======
->>>>>>> sanit
 def upload_excel(parent_widget):
     
     file_path, _ = QFileDialog.getOpenFileName(parent_widget, "Select Excel File", "", "Excel Files (*.xlsx)")

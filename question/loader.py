@@ -74,8 +74,6 @@ class QuestionProcessor:
         # Replace placeholders in the question string (col 0)
          #question_template = str(self.df.iloc[self.rowIndex, 0])
         question_template = str(self.df.iloc[self.rowIndex]["question"])
-        #question_template = str(self.df.iloc[self.rowIndex, 0])
-        question_template = str(self.df.iloc[self.rowIndex]["question"])
         for i, var in enumerate(self.variables):
             question_template = question_template.replace(f"{{{var}}}", str(self.oprands[i]))
  

@@ -3,6 +3,8 @@ import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QHBoxLayout, QWidget ,QVBoxLayout ,QGridLayout
 from question.loader import  QuestionProcessor
+# pages/ques_functions.py
+
 from pages.shared_ui import (
     create_colored_widget,
     create_label,
@@ -34,18 +36,9 @@ def load_pages(section_name, back_callback, difficulty_index,
     widgets = []
  
     # 👉 Custom logic for "Operations"
-    widgets = []
-    # --- 🏠 Back button at top-left ---
-    top_bar = QWidget()
-    top_layout = QHBoxLayout(top_bar)
-    top_layout.setContentsMargins(0, 0, 0, 0)
-    top_layout.addWidget(create_back_button(back_callback), alignment=Qt.AlignLeft)
-    top_layout.addStretch()
-    widgets.append(top_bar)
-    
-    # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
         title = create_label("Choose an Operation", font_size=22, bold=True)
+        title = create_label(tr("Choose an Operation"), font_size=22, bold=True)
         title.setAlignment(Qt.AlignCenter)
 
         grid = QGridLayout()
@@ -81,6 +74,15 @@ def load_pages(section_name, back_callback, difficulty_index,
 
 
 
+
+    # ✅ For other sections
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
+
+
+
+
+
+
     #widgets.append(create_back_button(back_callback))
     
      # --- 🔊 Mute button at bottom-left ---
@@ -99,6 +101,8 @@ uploaded_df = None
 uploaded_df = None
 
 def upload_excel(parent_widget):
+    
+
     
 
     file_path, _ = QFileDialog.getOpenFileName(parent_widget, "Select Excel File", "", "Excel Files (*.xlsx)")

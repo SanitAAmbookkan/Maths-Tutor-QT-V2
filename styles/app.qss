@@ -6,10 +6,3 @@
 
 
 
-.title {
-    font-size: 22px;
-    font-family: "Poppins";
-    font-weight: bold;
-    color:#ffffff;
-    margin-bottom: 0px;
-}

@@ -9,7 +9,7 @@ from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
 from question.loader import QuestionProcessor
 from time import time
 import random 
-from tts.engine import TextToSpeech
+from tts.tts_worker import TextToSpeech
 
 
 DIFFICULTY_LEVELS = ["Simple", "Easy", "Medium", "Hard", "Challenging"]
@@ -193,7 +193,10 @@ class QuestionWidget(QWidget):
         self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
         self.main_window = window
+        self.tts = TextToSpeech() # your TTS instance
         self.init_ui()
+       
+
 
     def init_ui(self):
         self.question_area = QWidget()
@@ -226,9 +229,6 @@ class QuestionWidget(QWidget):
         self.layout.addWidget(self.result_label)
         self.layout.addStretch()
 
-        self.load_new_question()
-
-    def load_new_question(self):
         self.end_button = QPushButton("End Session")
         self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
         self.end_button.setFixedWidth(150)
@@ -236,9 +236,21 @@ class QuestionWidget(QWidget):
         self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
 
         self.layout.addStretch()
-        
 
         self.load_new_question()
+
+
+    #def load_new_question(self):
+        #self.end_button = QPushButton("End Session")
+        #self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
+        #self.end_button.setFixedWidth(150)
+        #self.end_button.clicked.connect(self.end_session)
+        #self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
+
+        #self.layout.addStretch()
+        
+
+        #self.load_new_question()
     
 
     def end_session(self):
@@ -258,6 +270,11 @@ class QuestionWidget(QWidget):
         self.label.setText(question_text)
         self.input_box.setText("")  # ✨ Clear only the input
         self.result_label.setText("")
+
+        # Speak question for accessibility
+        if hasattr(self, 'tts'):
+            self.tts.speak(question_text)
+
     def show_final_score(self):
                 self.result_label.setText(
                     "🎉 Quiz Finished!"

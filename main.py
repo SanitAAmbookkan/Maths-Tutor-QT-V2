@@ -257,7 +257,7 @@ class MainWindow(QMainWindow):
             button.setProperty("class", "menu-button")
 
             # Set accessible name for all buttons
-            button.setAccessibleName(name)
+            button.setAccessibleName(translated_name)
 
             # Set accessible description only for the first button
             if i == 0:

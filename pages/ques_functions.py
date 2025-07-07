@@ -79,7 +79,7 @@ def upload_excel(parent_widget):
 
     required = {"question", "operands", "equation"}
     if not required.issubset(df.columns):
-        QMessageBox.critical(parent_widget, "Invalid File", "Excel must have columns: type, input, output")
+        QMessageBox.critical(parent_widget, "Invalid File", "Excel must have columns titled: question, operands, equation")
         return
 
     #os.makedirs(exist_ok=True)

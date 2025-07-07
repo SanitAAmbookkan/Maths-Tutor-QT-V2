@@ -119,8 +119,6 @@ class MainWindow(QMainWindow):
         self.load_style("main_window.qss")
         self.current_theme = "light"  # Initial theme
         self.media_player = QMediaPlayer()
-        #self.player = self.setup_background_music()
-
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
 
     def init_ui(self):
@@ -142,7 +140,7 @@ class MainWindow(QMainWindow):
          # Top bar for theme toggle
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
-        #self.tts = TextToSpeech()  #  Add this line to initialize TTS
+        
 
         # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
@@ -175,8 +173,7 @@ class MainWindow(QMainWindow):
         subtitle = QLabel(tr("ready").format(lang=self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
-        #self.tts.speak(f"Ready to ... learn in {self.language}    ")
- 
+       
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)

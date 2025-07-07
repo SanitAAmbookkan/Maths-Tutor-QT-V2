@@ -83,6 +83,7 @@ class RootWindow(QDialog):
     def handle_continue(self):
         selected = self.language_combo.currentText()
         language.selected_language = selected  # ✅ Now this will work
+        print(selected)
         self.accept()
 
         
@@ -149,7 +150,15 @@ class MainWindow(QMainWindow):
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
         self.theme_button.setAccessibleName("")
-        self.theme_button.setAccessibleDescription(tr(f"Welcome to maths tutor. Ready to learn in {self.language}! . Press to switch to dark theme"))
+
+        from language.language import translations
+        desc = f"{translations[self.language]['welcome']} {translations[self.language]['ready'].format(lang=self.language)}"
+        self.theme_button.setAccessibleDescription(desc)
+
+
+
+
+
 
         top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
         top_bar.addStretch()

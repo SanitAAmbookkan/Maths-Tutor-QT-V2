@@ -261,7 +261,6 @@ class MainWindow(QMainWindow):
           new_state = not self.is_muted
           self.set_mute(new_state)
           self.audio_button.setText("🔇" if new_state else "🔊")
-          self.tts.speak(f"{self.audio_button.capitalize()} theme activated")
 
     def toggle_audio(self):
         current = self.audio_button.text()
@@ -270,7 +269,7 @@ class MainWindow(QMainWindow):
 
         # Speak appropriate message
         message = "Audio muted" if new_state == "🔇" else "Audio unmuted"
-        self.tts.speak(message)
+       
 
       
 
@@ -408,8 +407,7 @@ class MainWindow(QMainWindow):
         self.central_widget.style().unpolish(self.central_widget)
         self.central_widget.style().polish(self.central_widget)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
-        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
-      
+       
 
 
 if __name__ == "__main__":

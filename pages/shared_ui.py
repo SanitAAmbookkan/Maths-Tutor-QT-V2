@@ -2,7 +2,7 @@
 
 from PyQt5.QtWidgets import ( QWidget, QLabel, QHBoxLayout, QPushButton,
                               QVBoxLayout,QSizePolicy, QDialog, QSlider, QDialogButtonBox
-                              ,QSpacerItem,QLineEdit)
+                              ,QSpacerItem,QLineEdit,QMessageBox)
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
@@ -422,13 +422,31 @@ class SettingsDialog(QDialog):
 
 
     def handle_reset_language(self):
-        from main import RootWindow, MainWindow # Dynamically import to avoid circular imports
+        from main import RootWindow, MainWindow  # Dynamically import to avoid circular imports
+        from language import language
 
+        # Open language selection dialog (in minimal mode)
         dialog = RootWindow(minimal=True)
         if dialog.exec_() == QDialog.Accepted:
+            # Get selected language
             new_lang = dialog.language_combo.currentText()
+
+            # Update global and local language state
+            language.selected_language = new_lang
             self.updated_language = new_lang
-            print(f"[Language Reset] New language: {new_lang}")
+
+            # Show confirmation
+            QMessageBox.information(self, "Language Changed",
+                                    f"Language changed to {new_lang}. The app will now reload to apply changes.")
+            print( "changed language",language.selected_language)
+            # Restart main window with new language
+            if self.main_window:
+                self.main_window.close()  # Close existing window
+                self.main_window = MainWindow(language=new_lang)
+                self.main_window.show()
+
+            self.close()  # Close settings dialog
+
 
     def accept_settings(self):
         selected_index = self.difficulty_slider.value()

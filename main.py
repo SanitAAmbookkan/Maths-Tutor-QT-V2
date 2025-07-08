@@ -113,6 +113,10 @@ class MainWindow(QMainWindow):
         self.section_pages = {} 
         self.is_muted = False
         self.language = language
+
+        from language import language
+        language.selected_language=self.language
+
         self.init_ui()
         
 
@@ -305,31 +309,41 @@ class MainWindow(QMainWindow):
 
     def create_main_footer_buttons(self):
         buttons = ["Upload", "Help", "About", "Settings"]
-        translated = [tr(b) for b in buttons]
+        translated = {tr(b): b for b in buttons}  
+       
         return create_footer_buttons(
-            translated,
+            list(translated.keys()),
             callbacks={
                 "Upload": self.handle_upload,
-                "Settings": self.handle_settings
+                tr("Settings"): self.handle_settings
         }
     )
 
+    from language.language import tr  # Make sure `tr()` is imported
+
     def create_section_footer(self):
-        buttons=["Help", "About", "Settings"]
-        translated=[tr(b) for b in buttons]
+        buttons = ["Help", "About", "Settings"]
+
+        # Translate all button labels
+        translated = {tr(b): b for b in buttons}  # Dict: {Translated_Label: Original}
+
         return create_footer_buttons(
-            translated,
+            list(translated.keys()),  # Translated text shown on buttons
             callbacks={
-                "Settings": self.handle_settings
+                tr("Settings"): self.handle_settings  # Use translated key
             }
         )
+
+
+        
 
     def handle_settings(self):
         
 
         dialog = SettingsDialog(
             parent=self,
-            initial_difficulty=getattr(self, "current_difficulty", 1)
+            initial_difficulty=getattr(self, "current_difficulty", 1),
+            main_window=self
         )
 
         if dialog.exec_() == QDialog.Accepted:

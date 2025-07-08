@@ -1,8 +1,8 @@
-from PySide6.QtCore import QThread, Signal, QObject
+from PyQt5.QtCore import QThread, pyqtSignal, QObject
 import pyttsx3
 
 class TTSWorker(QThread):
-    finished = Signal()
+    finished = pyqtSignal()
 
     def __init__(self, text):
         super().__init__()

@@ -12,10 +12,8 @@ from pages.ques_functions import load_pages, upload_excel   # ← your new funct
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
 
+from language.language import get_saved_language,save_selected_language_to_file,tr
 
-
-from language import language 
-from language.language import tr
 
 
 
@@ -23,6 +21,7 @@ class RootWindow(QDialog):
     def __init__(self,minimal=False):
         super().__init__()
         self.minimal = minimal
+        self.remember=False
         self.setWindowTitle("Maths Tutor - Language Selection")
         self.setFixedSize(400, 250 if not self.minimal else 150)
         self.init_ui()
@@ -82,11 +81,19 @@ class RootWindow(QDialog):
 
     def handle_continue(self):
         selected = self.language_combo.currentText()
-        language.selected_language = selected  # ✅ Now this will work
+        from language.language import set_language
+        set_language(selected)
         print(selected)
-        self.accept()
+        self.remember = self.remember_check.isChecked() if not self.minimal else False
 
         
+        if self.remember:
+            print("self.remember working")
+            save_selected_language_to_file(selected)
+        self.accept()
+
+    
+
  
     def create_line(self):
         line = QFrame()
@@ -432,8 +439,17 @@ if __name__ == "__main__":
         with open(style_file, "r") as f:
             app.setStyleSheet(f.read())
  
-    dialog = RootWindow()
-    if dialog.exec_() == QDialog.Accepted:
-        window = MainWindow(language=dialog.language_combo.currentText())
+
+    
+    lang=get_saved_language()
+    if lang:
+        print(lang)
+        window = MainWindow(language=lang)
         window.show()
         sys.exit(app.exec_())
+    else:
+        dialog = RootWindow()
+        if dialog.exec_() == QDialog.Accepted:
+            window = MainWindow(language=dialog.language_combo.currentText())
+            window.show()
+            sys.exit(app.exec_())

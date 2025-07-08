@@ -13,7 +13,7 @@ from tts.tts_worker import TextToSpeech
 
 
 DIFFICULTY_LEVELS = ["Simple", "Easy", "Medium", "Hard", "Challenging"]
-from language.language import tr
+from language.language import set_language,clear_remember_language,tr
 
 
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
@@ -423,8 +423,10 @@ class SettingsDialog(QDialog):
 
     def handle_reset_language(self):
         from main import RootWindow, MainWindow  # Dynamically import to avoid circular imports
-        from language import language
+        
 
+        
+        clear_remember_language()
         # Open language selection dialog (in minimal mode)
         dialog = RootWindow(minimal=True)
         if dialog.exec_() == QDialog.Accepted:
@@ -432,13 +434,13 @@ class SettingsDialog(QDialog):
             new_lang = dialog.language_combo.currentText()
 
             # Update global and local language state
-            language.selected_language = new_lang
+            set_language(new_lang)
             self.updated_language = new_lang
 
             # Show confirmation
             QMessageBox.information(self, "Language Changed",
                                     f"Language changed to {new_lang}. The app will now reload to apply changes.")
-            print( "changed language",language.selected_language)
+            print( "changed language",new_lang)
             # Restart main window with new language
             if self.main_window:
                 self.main_window.close()  # Close existing window

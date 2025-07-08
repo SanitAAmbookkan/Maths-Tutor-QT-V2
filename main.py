@@ -319,7 +319,7 @@ class MainWindow(QMainWindow):
         }
     )
 
-    from language.language import tr  # Make sure `tr()` is imported
+    
 
     def create_section_footer(self):
         buttons = ["Help", "About", "Settings"]

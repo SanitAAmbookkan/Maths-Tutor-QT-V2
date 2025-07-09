@@ -1,3 +1,8 @@
+import os, shutil
+import pandas as pd
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QHBoxLayout, QWidget ,QVBoxLayout ,QGridLayout
+from question.loader import  QuestionProcessor
 # pages/ques_functions.py
 
 from pages.shared_ui import (
@@ -32,6 +37,7 @@ def load_pages(section_name, back_callback, difficulty_index,
  
     # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
+        title = create_label("Choose an Operation", font_size=22, bold=True)
         title = create_label(tr("Choose an Operation"), font_size=22, bold=True)
         title.setAlignment(Qt.AlignCenter)
 
@@ -69,12 +75,34 @@ def load_pages(section_name, back_callback, difficulty_index,
 
 
 
+    # ✅ For other sections
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
+
+
+
+
+
+
+    #widgets.append(create_back_button(back_callback))
+    
+     # --- 🔊 Mute button at bottom-left ---
+    bottom_bar = QWidget()
+    bottom_layout = QHBoxLayout(bottom_bar)
+    bottom_layout.setContentsMargins(0, 0, 0, 0)
+    bottom_layout.addWidget(create_audio_toggle_button(), alignment=Qt.AlignLeft)
+    bottom_layout.addStretch()
+    widgets.append(bottom_bar)
+    
+uploaded_df = None
+
 
 
 
 uploaded_df = None
 
 def upload_excel(parent_widget):
+    
+
     
 
     file_path, _ = QFileDialog.getOpenFileName(parent_widget, "Select Excel File", "", "Excel Files (*.xlsx)")
@@ -91,7 +119,7 @@ def upload_excel(parent_widget):
 
     required = {"question", "operands", "equation"}
     if not required.issubset(df.columns):
-        QMessageBox.critical(parent_widget, "Invalid File", "Excel must have columns: type, input, output")
+        QMessageBox.critical(parent_widget, "Invalid File", "Excel must have columns titled: question, operands, equation")
         return
 
     #os.makedirs(exist_ok=True)

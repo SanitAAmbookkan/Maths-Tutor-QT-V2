@@ -8,8 +8,11 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
 from question.loader import QuestionProcessor
 from time import time
-import random
-DIFFICULTY_LEVELS = ["Very Easy", "Easy", "Medium", "Hard", "Very Hard"]
+import random 
+from tts.tts_worker import TextToSpeech
+
+
+DIFFICULTY_LEVELS = ["Simple", "Easy", "Medium", "Hard", "Challenging"]
 from language.language import tr
 from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtGui import QMovie
@@ -191,6 +194,7 @@ class QuestionWidget(QWidget):
         self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
         self.main_window = window
+        self.tts = TextToSpeech() # your TTS instance
         self.init_ui()
        
     def init_ui(self):
@@ -224,13 +228,6 @@ class QuestionWidget(QWidget):
         self.layout.addWidget(self.result_label)
         self.layout.addStretch()
 
-        self.end_button = QPushButton("End Session")
-        self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
-        self.end_button.setFixedWidth(150)
-        self.end_button.clicked.connect(self.end_session)
-        self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
-
-        self.layout.addStretch()
         self.gif_feedback_label = QLabel()
         self.gif_feedback_label.setVisible(False)  # Hidden by default
         self.processor.widget = self
@@ -251,6 +248,7 @@ class QuestionWidget(QWidget):
 
         # Add the GIF label to your layout (ideally after the question/answer widgets)
         self.layout.addWidget(self.gif_feedback_label, alignment=Qt.AlignCenter)
+
 
 
         self.load_new_question()
@@ -308,6 +306,11 @@ class QuestionWidget(QWidget):
         self.input_box.setText("")  # ✨ Clear only the input
         self.result_label.setText("")
         self.show_feedback_gif("question")
+
+
+        # Speak question for accessibility
+        if hasattr(self, 'tts'):
+            self.tts.speak(question_text)
 
     def show_final_score(self):
                 self.result_label.setText(
@@ -419,6 +422,8 @@ class SettingsDialog(QDialog):
         self.main_window = main_window
         self.updated_language = main_window.language if main_window else "English"
 
+        self.tts = TextToSpeech()  # TTS instance
+
         self.difficulty_slider = QSlider(Qt.Horizontal)
         self.difficulty_slider.setMinimum(0)
         self.difficulty_slider.setMaximum(len(DIFFICULTY_LEVELS) - 1)
@@ -429,10 +434,15 @@ class SettingsDialog(QDialog):
         self.difficulty_slider.setTracking(True)
         self.difficulty_slider.setFocusPolicy(Qt.StrongFocus)
         self.difficulty_slider.setFocus()
+        self.difficulty_slider.setAccessibleName("Difficulty slider")
+        self.difficulty_slider.setAccessibleDescription(f"Use left or right arrow keys to select difficulty level. The levels are Simple, Easy, Medium, Hard and challenging.")
         self.difficulty_slider.setValue(initial_difficulty)
-        self.difficulty_slider.valueChanged.connect(self.update_difficulty_label)
-
         self.difficulty_label = create_label(DIFFICULTY_LEVELS[initial_difficulty], font_size=12)
+       
+        self.difficulty_slider.valueChanged.connect(self.update_difficulty_label)
+        
+
+    
 
         # 🔁 Reset Language Button
         self.language_reset_btn = QPushButton("Reset Language")
@@ -454,7 +464,32 @@ class SettingsDialog(QDialog):
         self.setLayout(layout)
 
     def update_difficulty_label(self, index):
-        self.difficulty_label.setText(DIFFICULTY_LEVELS[index])
+        level = DIFFICULTY_LEVELS[index]
+        self.difficulty_label.setText(level)
+
+    # For screen reader
+        self.difficulty_slider.setAccessibleDescription(
+            f"Difficulty level selected: {level}. Use left or right arrow keys to change it. "
+            "Levels are: Simple, Easy, Medium, Hard, and Challenging."
+            )
+
+    # Optional: Also update the label's description (if used by screen readers)
+        self.difficulty_label.setAccessibleDescription(
+         f"Currently selected difficulty is {level}"
+         )   
+
+    def update_difficulty_label(self, value):
+            level_name = DIFFICULTY_LEVELS[value]
+            self.difficulty_label.setText(level_name)
+            self.difficulty_slider.setAccessibleDescription(
+                f"Difficulty level selected: {level_name}. Use left or right arrow keys to change it. Levels are: Simple, Easy, Medium, Hard, and Challenging."
+            )
+
+    def update_difficulty_label(self, index):
+        level = DIFFICULTY_LEVELS[index]
+        self.difficulty_label.setText(level)
+        self.difficulty_label.setAccessibleDescription(f"Currently selected difficulty is {level}")
+
 
     def handle_reset_language(self):
         from main import RootWindow, MainWindow # Dynamically import to avoid circular imports
@@ -477,5 +512,4 @@ class SettingsDialog(QDialog):
 
     def get_selected_language(self):
         return self.updated_language
-        
-
+    

@@ -175,3 +175,5 @@ translations = {
 
 def tr(key):
     return translations.get(selected_language, translations["English"]).get(key, key)
+
+

@@ -11,7 +11,9 @@ from pages.ques_functions import load_pages, upload_excel   # ← your new funct
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
-
+from PyQt5.QtGui import QMovie
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtCore import QSize
 
 
 from language import language 
@@ -199,7 +201,25 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.main_footer)
         self.main_layout.addWidget(self.section_footer)
         self.section_footer.hide()
-    
+     
+
+        self.gif_label = QLabel()
+        self.gif_label.setAlignment(Qt.AlignCenter)
+        self.gif_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.movie = QMovie("images/welcome-1.gif")
+        self.movie.setScaledSize(QSize(200, 200))  # Adjust size as needed
+        self.gif_label.setMovie(self.movie)
+        self.movie.start()
+
+        gif_layout = QHBoxLayout()
+        gif_layout.addStretch()
+        gif_layout.addWidget(self.gif_label)
+        gif_layout.addStretch()
+
+        menu_layout.addLayout(gif_layout)
+
+
     def play_sound(self, filename):
         
         if self.is_muted:

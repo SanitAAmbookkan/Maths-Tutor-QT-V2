@@ -4,18 +4,20 @@ from PyQt5.QtWidgets import ( QWidget, QLabel, QHBoxLayout, QPushButton,
                               QVBoxLayout,QSizePolicy, QDialog, QSlider, QDialogButtonBox
                               ,QSpacerItem,QLineEdit)
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QSize, Qt
+
 from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
 from question.loader import QuestionProcessor
 from time import time
 import random
 DIFFICULTY_LEVELS = ["Very Easy", "Easy", "Medium", "Hard", "Very Hard"]
 from language.language import tr
-
-
+from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtGui import QMovie
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import QTimer
 
 def create_entry_ui(main_window) -> QWidget:
     entry_widget = QWidget()
@@ -191,6 +193,25 @@ class QuestionWidget(QWidget):
         self.setLayout(self.layout)
         self.main_window = window
         self.init_ui()
+        self.gif_feedback_label = QLabel()
+        self.gif_feedback_label.setVisible(False)  # Hidden by default
+        self.processor.widget = self
+        # Make sure your widget has a layout
+        #layout = self.layout
+        #if layout is None:
+         #   layout = QVBoxLayout()
+          #  self.setLayout(layout)
+
+        #layout.addWidget(self.gif_feedback_label, alignment=Qt.AlignCenter)
+        self.gif_feedback_label = QLabel()
+        self.gif_feedback_label.setVisible(False)
+        self.gif_feedback_label.setAlignment(Qt.AlignCenter)
+        self.gif_feedback_label.setScaledContents(True)
+        self.gif_feedback_label.setMinimumSize(300, 300)
+        self.gif_feedback_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Add the GIF label to your layout (ideally after the question/answer widgets)
+        self.layout.addWidget(self.gif_feedback_label, alignment=Qt.AlignCenter)
 
     def init_ui(self):
         self.question_area = QWidget()
@@ -233,7 +254,30 @@ class QuestionWidget(QWidget):
         
 
         self.load_new_question()
-    
+        
+    def show_feedback_gif(self, sound_filename):
+        
+       
+        
+        gif_name = sound_filename.replace(".mp3", ".gif")
+        gif_path = f"images/{gif_name}"
+
+        movie = QMovie(gif_path)
+
+        # Set a fixed size to scale the gif
+        movie.setScaledSize(QSize(200, 200))  # Adjust this as needed
+
+        self.gif_feedback_label.setFixedSize(200, 200)
+        self.gif_feedback_label.setAlignment(Qt.AlignCenter)
+        self.gif_feedback_label.setMovie(movie)
+        self.gif_feedback_label.setVisible(True)
+        movie.start()
+
+
+            
+    def hide_feedback_gif(self):
+        self.gif_feedback_label.setVisible(False)
+        self.gif_feedback_label.clear()
 
     def end_session(self):
         #if hasattr(self, 'bg_player') and self.bg_player is not None:
@@ -248,6 +292,10 @@ class QuestionWidget(QWidget):
 
     
     def load_new_question(self):
+        if hasattr(self, "gif_feedback_label"):
+    
+            self.hide_feedback_gif()
+
         if self.processor.total_attempts >= self.max_questions:
             self.show_final_score()
             return
@@ -262,7 +310,10 @@ class QuestionWidget(QWidget):
                 )
                 print("Final Score:", self.processor.correct_answers, "/", self.processor.total_attempts)
                 sound_index = random.randint(1, 3)
-                self.main_window.play_sound(f"finished-{sound_index}.mp3")
+                sound_file = f"finished-{sound_index}.mp3"
+                self.main_window.play_sound(sound_file)
+                self.show_feedback_gif(sound_file)
+
             
     def check_answer(self):
         try:
@@ -283,38 +334,44 @@ class QuestionWidget(QWidget):
                 
                 if elapsed < 5:
                     if self.main_window and callable(getattr(self.main_window, "play_sound", None)):
-                        self.main_window.play_sound(f"excellent-{sound_index}.mp3")
+                        sound_file = f"excellent-{sound_index}.mp3"
+                        
                 elif elapsed < 10:
                     if self.main_window:
-                        self.main_window.play_sound(f"very-good-{sound_index}.mp3")
+                        sound_file =f"very-good-{sound_index}.mp3"
                 elif elapsed < 15:
                     if self.main_window:
-                        self.main_window.play_sound(f"good-{sound_index}.mp3")
+                        sound_file =f"good-{sound_index}.mp3"
                 elif elapsed < 20:
                     if self.main_window:
-                        self.main_window.play_sound(f"not-bad-{sound_index}.mp3")
+                        sound_file =f"not-bad-{sound_index}.mp3"
                 else:
                     if self.main_window:
-                        self.main_window.play_sound(f"okay-{sound_index}.mp3")
-
+                        sound_file =f"okay-{sound_index}.mp3"
+                self.main_window.play_sound(sound_file)
+                self.show_feedback_gif(sound_file)
+                  # ✅ Show the GIF
                 self.processor.retry_count = 0
-                self.load_new_question()  # ✨ Just update content
+
+                QTimer.singleShot(2000, self.load_new_question)  # wait 2 seconds before next question
 
             else:
                 self.processor.retry_count += 1
                 sound_index = random.randint(1, 3)
                 if self.processor.retry_count == 1:
-                    self.main_window.play_sound(f"wrong-anwser-{sound_index}.mp3")
+                    sound_file = f"wrong-anwser-{sound_index}.mp3"
                 else:
-                    self.main_window.play_sound(f"wrong-anwser-repeted-{sound_index}.mp3")
-                    
+                    sound_file = f"wrong-anwser-repeted-{sound_index}.mp3"
+
+                self.main_window.play_sound(sound_file)
+                self.show_feedback_gif(sound_file)
+
                 
                 if self.processor.retry_count < 3:
                     self.result_label.setText(f"❌ Wrong. Try again ({self.processor.retry_count}/3)")
                 else:
                     self.result_label.setText("❌ Wrong. Moving to next question.")
-                    self.processor.retry_count = 0
-                    self.load_new_question()
+                    QTimer.singleShot(2000, self.load_new_question) 
 
         except Exception as e:
             self.result_label.setText(f"Error: {str(e)}")

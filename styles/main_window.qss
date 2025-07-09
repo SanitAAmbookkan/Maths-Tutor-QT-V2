@@ -17,8 +17,8 @@ QLabel[class="subtitle"] {
 }
 
 QLabel[class="question-label"] {
-    font-size: 22px;
-    padding: 12px;
+    font-size: 30px;
+    padding: 16px;
 }
 
 /* === ANSWER INPUT BASE === */

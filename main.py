@@ -48,6 +48,7 @@ class RootWindow(QDialog):
         if not self.minimal:
             self.remember_check = QCheckBox("Remember my selection")
             self.remember_check.setChecked(False)
+            self.remember_check.setProperty("class", "checkbox")
             layout.addWidget(self.remember_check)
         
         layout.addStretch()
@@ -62,6 +63,7 @@ class RootWindow(QDialog):
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.setAutoDefault(False)
         self.cancel_button.setShortcut(Qt.Key_Escape)
+        self.cancel_button.setProperty("class", "danger-button") 
 
 
         btns = QHBoxLayout()

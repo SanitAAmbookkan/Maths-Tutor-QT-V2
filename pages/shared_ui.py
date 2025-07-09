@@ -205,8 +205,9 @@ class QuestionWidget(QWidget):
 
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.setFont(QFont("Arial", 16))
+        #self.label.setFont(QFont("Arial", 16))
         self.label.setWordWrap(True)
+        self.label.setProperty("class", "question-label")
 
         question_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         question_layout.addWidget(self.label)

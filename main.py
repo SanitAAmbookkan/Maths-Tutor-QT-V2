@@ -2,7 +2,7 @@ import sys, os
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QDialog, QVBoxLayout,
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
-    QWidget, QGridLayout,QStackedWidget, QSizePolicy
+    QWidget, QGridLayout,QStackedWidget, QSizePolicy, QShortcut, QMessageBox
 )
 from PyQt5.QtCore import Qt
 from question.loader import QuestionProcessor
@@ -13,6 +13,9 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
 
 from language.language import get_saved_language,save_selected_language_to_file,tr
+
+from PyQt5.QtGui import QKeySequence
+
 
 
 
@@ -125,7 +128,7 @@ class MainWindow(QMainWindow):
         language.selected_language=self.language
 
         self.init_ui()
-        
+        self.setup_shortcuts()
 
         self.load_style("main_window.qss")
         self.current_theme = "light"  # Initial theme
@@ -141,6 +144,7 @@ class MainWindow(QMainWindow):
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
 
+        
     def init_ui(self):
         self.central_widget = QWidget()
         self.central_widget.setProperty("class", "central-widget")
@@ -428,7 +432,37 @@ class MainWindow(QMainWindow):
         self.central_widget.style().unpolish(self.central_widget)
         self.central_widget.style().polish(self.central_widget)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
-       
+
+        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
+    
+    def setup_shortcuts(self):  # ✅ Newly added method
+        exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
+        exit_shortcut.setContext(Qt.ApplicationShortcut)
+        exit_shortcut.activated.connect(self.confirm_exit)
+
+    def confirm_exit(self):
+        reply = QMessageBox.question(
+            self,
+            "Exit Application",
+            "Are you sure you want to exit?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            QApplication.quit()
+
+    def closeEvent(self, event):
+        reply = QMessageBox.question(
+            self,
+            "Exit Application",
+            "Are you sure you want to exit?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
 
 if __name__ == "__main__":

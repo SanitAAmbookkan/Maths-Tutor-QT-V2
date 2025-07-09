@@ -143,6 +143,8 @@ def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
 
 
         btn.setProperty("class", "footer-button")
+        
+        
         if callbacks and name in callbacks:
             btn.clicked.connect(callbacks[name])
         layout.addWidget(btn)
@@ -336,6 +338,29 @@ def create_dynamic_question_ui(section_name, difficulty_index, back_callback,mai
     layout.addWidget(question_widget)
     return container
 
+def apply_theme(widget, theme):
+        """
+        Recursively apply theme properties to widget and all children.
+        This ensures styling defined in .qss using [theme="..."] and class="..."] is respected.
+        """
+        if not widget:
+            return
+
+        widget.setProperty("theme", theme)
+        widget.setStyleSheet("")  # clear any inline styles
+        widget.style().unpolish(widget)
+        widget.style().polish(widget)
+
+        for child in widget.findChildren(QWidget):
+            child.setProperty("theme", theme)
+            child.setStyleSheet("")
+            child.style().unpolish(child)
+
+
+
+            child.style().polish(child)
+
+
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, initial_difficulty=1, main_window=None):
         super().__init__(parent)
@@ -435,3 +460,5 @@ class SettingsDialog(QDialog):
 
     def get_selected_language(self):
         return self.updated_language
+    
+   

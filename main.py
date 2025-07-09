@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from question.loader import QuestionProcessor
-from pages.shared_ui import create_footer_buttons, SettingsDialog
+from pages.shared_ui import create_footer_buttons, apply_theme,SettingsDialog
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -144,14 +144,14 @@ class MainWindow(QMainWindow):
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
-    
-         # Top bar for theme toggle
+
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
         
 
         # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
+        self.theme_button.setProperty("theme", self.current_theme)
         self.theme_button.setFixedSize(40, 40)
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
@@ -177,10 +177,15 @@ class MainWindow(QMainWindow):
 
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
+        title.setProperty("theme", self.current_theme)
+
  
         subtitle = QLabel(tr("ready").format(lang=self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
+        subtitle.setProperty("theme", self.current_theme)
+
+        
        
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
@@ -193,6 +198,7 @@ class MainWindow(QMainWindow):
         bottom_layout.setContentsMargins(0, 0, 0, 0)
 
         self.audio_button = QPushButton("🔊")
+        self.audio_button.setProperty("theme", self.current_theme)
         self.audio_button.setObjectName("audio-button")
         self.audio_button.setFixedSize(50, 50)
         self.audio_button.setToolTip("Toggle Mute/Unmute")
@@ -215,6 +221,8 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.main_footer)
         self.main_layout.addWidget(self.section_footer)
         self.section_footer.hide()
+        apply_theme(self.central_widget, self.current_theme)
+
     
     def play_sound(self, filename):
         
@@ -371,7 +379,7 @@ class MainWindow(QMainWindow):
                 page.setProperty("theme", self.current_theme)
                 page.style().unpolish(page)
                 page.style().polish(page)
-
+                apply_theme(page, self.current_theme)  # ✅ Apply current theme
             self.section_pages[name] = page
             self.stack.addWidget(page)
 
@@ -406,11 +414,19 @@ class MainWindow(QMainWindow):
 
     def toggle_theme(self):
         self.current_theme = "dark" if self.current_theme == "light" else "light"
-        self.central_widget.setProperty("theme", self.current_theme)
-        self.central_widget.style().unpolish(self.central_widget)
-        self.central_widget.style().polish(self.central_widget)
+        print("Theme switched to:", self.current_theme)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
-       
+
+        widgets_to_update = [
+            self.central_widget,
+            self.menu_widget,
+            self.main_footer,
+            self.section_footer
+        ] + list(self.section_pages.values())
+
+        for widget in widgets_to_update:
+            apply_theme(widget, self.current_theme)
+
     def update_back_to_operations_visibility(self, section_name):
         operation_subsections = {
             "addition", "subtraction", "multiplication",

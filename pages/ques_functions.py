@@ -4,7 +4,6 @@ from pages.shared_ui import (
     create_colored_widget,
     create_label,
     create_menu_button,
-    create_back_button,
     create_vertical_layout,
     create_dynamic_question_ui,
     create_dynamic_question_ui,
@@ -55,22 +54,12 @@ def load_pages(section_name, back_callback, difficulty_index,
         layout.addSpacing(20)
         layout.addWidget(wrapper)
         layout.addSpacing(30)
-        layout.addWidget(create_back_button(back_callback), alignment=Qt.AlignCenter)
 
         page.setLayout(layout)
         return page
 
     # ✅ For other sections
-    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
-
-
-
-
-
-
-
-
-
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,main_window=main_window)
 
 uploaded_df = None
 

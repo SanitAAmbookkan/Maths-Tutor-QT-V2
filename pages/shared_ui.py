@@ -129,12 +129,19 @@ def create_vertical_layout(widgets: list) -> QVBoxLayout:
 def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
     footer = QWidget()
     layout = QHBoxLayout()
+    layout.setSpacing(15)
     layout.setContentsMargins(10, 10, 10, 10)
     layout.addStretch()
 
     for name in names:
         btn = QPushButton(name)
-        btn.setFixedSize(*size)
+        btn.setObjectName(name.lower().replace(" ", "_"))
+        
+        btn.setMinimumSize(*size)  # Base size
+        btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        btn.setFont(QFont("Arial", 14))  # or bigger
+
+
         btn.setProperty("class", "footer-button")
         if callbacks and name in callbacks:
             btn.clicked.connect(callbacks[name])
@@ -142,16 +149,6 @@ def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
 
     footer.setLayout(layout)
     return footer
-
-
-def create_back_button(callback) -> QPushButton:
-    back_btn = QPushButton(tr("HOME"))
-    back_btn.setFixedSize(150, 40)
-    back_btn.setProperty("class", "menu-button")
-    back_btn.clicked.connect(callback)
-    return back_btn
-
-
 
 def create_answer_input(width=300, height=40, font_size=14) -> QLineEdit:
     input_box = QLineEdit()
@@ -323,7 +320,9 @@ class QuestionWidget(QWidget):
 
 
 
-def create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=None):
+
+def create_dynamic_question_ui(section_name, difficulty_index, back_callback,main_window=None, back_to_operations_callback=None):
+
     container = QWidget()
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignTop)
@@ -332,17 +331,11 @@ def create_dynamic_question_ui(section_name, difficulty_index, back_callback,win
     processor = QuestionProcessor(section_name, difficulty_index)
     processor.process_file()
     
-    question_widget = QuestionWidget(processor,window=window)
+    question_widget = QuestionWidget(processor,main_window)
 
     layout.addWidget(question_widget)
-
-    # Back Button at the bottom
-    back_btn = QPushButton(tr('HOME'))
-    back_btn.setFixedSize(150, 40)
-    back_btn.clicked.connect(back_callback)
-    layout.addWidget(back_btn, alignment=Qt.AlignCenter)
-
     return container
+
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, initial_difficulty=1, main_window=None):
         super().__init__(parent)

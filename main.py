@@ -13,7 +13,6 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
 
 
-
 from language import language 
 from language.language import tr
 
@@ -315,15 +314,17 @@ class MainWindow(QMainWindow):
     )
 
     def create_section_footer(self):
-        buttons=["Help", "About", "Settings"]
+        buttons=["Back to Operations","Back to Home","Help", "About", "Settings"]
         translated=[tr(b) for b in buttons]
         return create_footer_buttons(
             translated,
             callbacks={
+                "Back to Operations": lambda: self.load_section("Operations"),
+                "Back to Home": self.back_to_main_menu,
                 "Settings": self.handle_settings
             }
         )
-
+    
     def handle_settings(self):
         
 
@@ -378,7 +379,9 @@ class MainWindow(QMainWindow):
         self.menu_widget.hide()
         self.main_footer.hide()
         self.section_footer.show()
-
+        # ✅ Show "Back to Operations" only for sub-sections of Operations
+        self.update_back_to_operations_visibility(name)
+    
     def back_to_main_menu(self):
         self.play_sound("home_button_sound.wav")  
         self.stack.setCurrentWidget(self.menu_widget)
@@ -408,7 +411,17 @@ class MainWindow(QMainWindow):
         self.central_widget.style().polish(self.central_widget)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
        
-
+    def update_back_to_operations_visibility(self, section_name):
+        operation_subsections = {
+            "addition", "subtraction", "multiplication",
+            "division", "remainder", "percentage"
+        }
+        normalized = section_name.strip().lower()
+        # Find the button by objectName (assigned in shared_ui)
+        back_to_ops_btn = self.section_footer.findChild(QPushButton, "back_to_operations")
+        if back_to_ops_btn:
+            back_to_ops_btn.setVisible(normalized in operation_subsections)
+    
 
 if __name__ == "__main__":
 

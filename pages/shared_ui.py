@@ -129,22 +129,17 @@ def create_vertical_layout(widgets: list) -> QVBoxLayout:
 def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
     footer = QWidget()
     layout = QHBoxLayout()
-    layout.setSpacing(15)
+    layout.setSpacing(10)
     layout.setContentsMargins(10, 10, 10, 10)
     layout.addStretch()
 
     for name in names:
         btn = QPushButton(name)
         btn.setObjectName(name.lower().replace(" ", "_"))
-        
         btn.setMinimumSize(*size)  # Base size
         btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         btn.setFont(QFont("Arial", 14))  # or bigger
-
-
         btn.setProperty("class", "footer-button")
-        
-        
         if callbacks and name in callbacks:
             btn.clicked.connect(callbacks[name])
         layout.addWidget(btn)
@@ -205,10 +200,9 @@ class QuestionWidget(QWidget):
 
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
-        #self.label.setFont(QFont("Arial", 16))
-        self.label.setWordWrap(True)
         self.label.setProperty("class", "question-label")
-
+        self.label.setWordWrap(True)
+       
         question_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         question_layout.addWidget(self.label)
         question_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
@@ -323,9 +317,7 @@ class QuestionWidget(QWidget):
 
 
 
-
 def create_dynamic_question_ui(section_name, difficulty_index, back_callback,main_window=None, back_to_operations_callback=None):
-
     container = QWidget()
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignTop)
@@ -356,9 +348,6 @@ def apply_theme(widget, theme):
             child.setProperty("theme", theme)
             child.setStyleSheet("")
             child.style().unpolish(child)
-
-
-
             child.style().polish(child)
 
 
@@ -461,5 +450,3 @@ class SettingsDialog(QDialog):
 
     def get_selected_language(self):
         return self.updated_language
-    
-   

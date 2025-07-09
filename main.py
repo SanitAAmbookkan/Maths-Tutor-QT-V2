@@ -180,14 +180,11 @@ class MainWindow(QMainWindow):
 
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
-        
-
  
         subtitle = QLabel(tr("ready").format(lang=self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
         
-       
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
@@ -223,7 +220,6 @@ class MainWindow(QMainWindow):
         self.section_footer.hide()
         apply_theme(self.central_widget, self.current_theme)
 
-    
     def play_sound(self, filename):
         
         if self.is_muted:
@@ -332,7 +328,6 @@ class MainWindow(QMainWindow):
                 "Settings": self.handle_settings
             }
         )
-    
     def handle_settings(self):
         
 
@@ -386,7 +381,6 @@ class MainWindow(QMainWindow):
         self.menu_widget.hide()
         self.main_footer.hide()
         self.section_footer.show()
-        # ✅ Show "Back to Operations" only for sub-sections of Operations
         self.update_back_to_operations_visibility(name)
     
     def back_to_main_menu(self):

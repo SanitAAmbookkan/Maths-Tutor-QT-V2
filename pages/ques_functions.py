@@ -56,10 +56,6 @@ def load_pages(section_name, back_callback, difficulty_index,
         layout.addSpacing(30)
 
         page.setLayout(layout)
-        # ✅ Apply theme if available
-        if main_window and hasattr(main_window, "apply_theme"):
-            main_window.apply_theme(page, main_window.current_theme)
-
         return page
 
     # ✅ For other sections

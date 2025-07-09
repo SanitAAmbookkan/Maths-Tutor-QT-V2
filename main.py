@@ -6,11 +6,12 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from question.loader import QuestionProcessor
-from pages.shared_ui import create_footer_buttons, apply_theme,SettingsDialog
+from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
+
 
 
 from language import language 
@@ -147,13 +148,13 @@ class MainWindow(QMainWindow):
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
 
+        # Top bar for theme toggle
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
         
 
         # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
-        self.theme_button.setProperty("theme", self.current_theme)
         self.theme_button.setFixedSize(40, 40)
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
@@ -179,14 +180,12 @@ class MainWindow(QMainWindow):
 
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
-        title.setProperty("theme", self.current_theme)
+        
 
  
         subtitle = QLabel(tr("ready").format(lang=self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
-        subtitle.setProperty("theme", self.current_theme)
-
         
        
         menu_layout.addWidget(title)
@@ -200,7 +199,6 @@ class MainWindow(QMainWindow):
         bottom_layout.setContentsMargins(0, 0, 0, 0)
 
         self.audio_button = QPushButton("🔊")
-        self.audio_button.setProperty("theme", self.current_theme)
         self.audio_button.setObjectName("audio-button")
         self.audio_button.setFixedSize(50, 50)
         self.audio_button.setToolTip("Toggle Mute/Unmute")
@@ -378,7 +376,6 @@ class MainWindow(QMainWindow):
             page = load_pages(name, self.back_to_main_menu, difficulty_index=self.current_difficulty, main_window=self)
 
             if hasattr(self, "current_theme"):
-                page.setProperty("theme", self.current_theme)
                 page.style().unpolish(page)
                 page.style().polish(page)
                 apply_theme(page, self.current_theme)  # ✅ Apply current theme

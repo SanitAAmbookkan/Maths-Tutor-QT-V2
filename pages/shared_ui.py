@@ -499,3 +499,4 @@ class SettingsDialog(QDialog):
 
     def get_selected_language(self):
         return self.updated_language
+    

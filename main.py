@@ -155,10 +155,10 @@ class MainWindow(QMainWindow):
 
         # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
-        self.theme_button.setFixedSize(40, 40)
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
         self.theme_button.setAccessibleName("")
+        self.theme_button.setProperty("class", "menu-button")
 
         from language.language import translations
         desc = f"{translations[self.language]['welcome']} {translations[self.language]['ready'].format(lang=self.language)}"
@@ -197,7 +197,6 @@ class MainWindow(QMainWindow):
 
         self.audio_button = QPushButton("🔊")
         self.audio_button.setObjectName("audio-button")
-        self.audio_button.setFixedSize(50, 50)
         self.audio_button.setToolTip("Toggle Mute/Unmute")
         self.audio_button.clicked.connect(self.toggle_audio)
 

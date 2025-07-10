@@ -408,8 +408,9 @@ class MainWindow(QMainWindow):
         self.central_widget.style().unpolish(self.central_widget)
         self.central_widget.style().polish(self.central_widget)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
+        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
     
-    def setup_shortcuts(self):  # ✅ Newly added method
+    def setup_shortcuts(self):  
         exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
         exit_shortcut.setContext(Qt.ApplicationShortcut)
         exit_shortcut.activated.connect(self.confirm_exit)

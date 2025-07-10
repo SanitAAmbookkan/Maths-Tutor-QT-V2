@@ -261,18 +261,11 @@ class MainWindow(QMainWindow):
             else:
                 self.play_background_music()
     def toggle_audio(self):
-          new_state = not self.is_muted
-          self.set_mute(new_state)
-          self.audio_button.setText("🔇" if new_state else "🔊")
-
-    def toggle_audio(self):
-        current = self.audio_button.text()
-        new_state = "🔇" if current == "🔊" else "🔊"
-        self.audio_button.setText(new_state)
-
-        # Speak appropriate message
-        message = "Audio muted" if new_state == "🔇" else "Audio unmuted"
-       
+        new_state = not self.is_muted
+        self.set_mute(new_state)
+        self.audio_button.setText("🔇" if new_state else "🔊")
+        print("[AUDIO]", "Muted" if new_state else "Unmuted")
+        
 
       
 
@@ -418,7 +411,6 @@ class MainWindow(QMainWindow):
 
         for widget in widgets_to_update:
             apply_theme(widget, self.current_theme)
-
         #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
     
     def setup_shortcuts(self):  # ✅ Newly added method

@@ -409,8 +409,17 @@ class MainWindow(QMainWindow):
         self.current_theme = "dark" if self.current_theme == "light" else "light"
         print("Theme switched to:", self.current_theme)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
+        widgets_to_update = [
+            self.central_widget,
+            self.menu_widget,
+            self.main_footer,
+            self.section_footer
+        ] + list(self.section_pages.values())
 
-        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
+        for widget in widgets_to_update:
+            apply_theme(widget, self.current_theme)
+
+        #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
     
     def setup_shortcuts(self):  # ✅ Newly added method
         exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
@@ -440,16 +449,6 @@ class MainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
-
-        widgets_to_update = [
-            self.central_widget,
-            self.menu_widget,
-            self.main_footer,
-            self.section_footer
-        ] + list(self.section_pages.values())
-
-        for widget in widgets_to_update:
-            apply_theme(widget, self.current_theme)
 
     def update_back_to_operations_visibility(self, section_name):
         operation_subsections = {

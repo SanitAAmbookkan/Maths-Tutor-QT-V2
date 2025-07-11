@@ -354,15 +354,27 @@ class MainWindow(QMainWindow):
         buttons = ["Back to Operations", "Back to Home", "Help", "About", "Settings"]
         translated = [tr(b) for b in buttons]
 
+        # Create a mapping from translated labels to callbacks
         callbacks = {
             tr("Back to Operations"): lambda: self.load_section("Operations"),
             tr("Back to Home"): self.back_to_main_menu,
             tr("Help"): self.show_help if hasattr(self, "show_help") else lambda: None,
             tr("About"): self.show_about if hasattr(self, "show_about") else lambda: None,
-            tr("Settings"): self.handle_settings,
+            tr("Settings"): self.handle_settings
         }
 
-        return create_footer_buttons(translated, callbacks=callbacks)
+        # Create the footer with translated labels and callbacks
+        footer = create_footer_buttons(translated, callbacks=callbacks)
+
+        # ✅ Assign objectName for visibility toggling (very important!)
+        for btn in footer.findChildren(QPushButton):
+            if btn.text() == tr("Back to Operations"):
+                btn.setObjectName("back_to_operations")
+            elif btn.text() == tr("Back to Home"):
+                btn.setObjectName("back_to_home")
+
+        return footer
+
 
     def handle_settings(self):
         

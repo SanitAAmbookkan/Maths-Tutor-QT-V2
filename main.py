@@ -6,13 +6,17 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from question.loader import QuestionProcessor
-from pages.shared_ui import create_footer_buttons, SettingsDialog
+from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
 
 from language.language import get_saved_language,save_selected_language_to_file,tr
+
+from PyQt5.QtGui import QMovie
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtCore import QSize
 
 from PyQt5.QtGui import QKeySequence
 
@@ -51,6 +55,7 @@ class RootWindow(QDialog):
         if not self.minimal:
             self.remember_check = QCheckBox("Remember my selection")
             self.remember_check.setChecked(False)
+            self.remember_check.setProperty("class", "checkbox")
             layout.addWidget(self.remember_check)
         
         layout.addStretch()
@@ -65,6 +70,7 @@ class RootWindow(QDialog):
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.setAutoDefault(False)
         self.cancel_button.setShortcut(Qt.Key_Escape)
+        self.cancel_button.setProperty("class", "danger-button") 
 
 
         btns = QHBoxLayout()
@@ -160,18 +166,17 @@ class MainWindow(QMainWindow):
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
-    
-         # Top bar for theme toggle
+        # Top bar for theme toggle
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
         
 
         # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
-        self.theme_button.setFixedSize(40, 40)
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
         self.theme_button.setAccessibleName("")
+        self.theme_button.setProperty("class", "menu-button")
 
         from language.language import translations
         desc = f"{translations[self.language]['welcome']} {translations[self.language]['ready'].format(lang=self.language)}"
@@ -197,7 +202,7 @@ class MainWindow(QMainWindow):
         subtitle = QLabel(tr("ready").format(lang=self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
-       
+
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
@@ -210,7 +215,6 @@ class MainWindow(QMainWindow):
 
         self.audio_button = QPushButton("🔊")
         self.audio_button.setObjectName("audio-button")
-        self.audio_button.setFixedSize(50, 50)
         self.audio_button.setToolTip("Toggle Mute/Unmute")
         self.audio_button.clicked.connect(self.toggle_audio)
 
@@ -231,7 +235,28 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.main_footer)
         self.main_layout.addWidget(self.section_footer)
         self.section_footer.hide()
-    
+
+     
+
+        self.gif_label = QLabel()
+        self.gif_label.setAlignment(Qt.AlignCenter)
+        self.gif_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.movie = QMovie("images/welcome-1.gif")
+        self.movie.setScaledSize(QSize(200, 200))  # Adjust size as needed
+        self.gif_label.setMovie(self.movie)
+        self.movie.start()
+
+        gif_layout = QHBoxLayout()
+        gif_layout.addStretch()
+        gif_layout.addWidget(self.gif_label)
+        gif_layout.addStretch()
+
+        menu_layout.addLayout(gif_layout)
+
+        apply_theme(self.central_widget, self.current_theme)
+
+
     def play_sound(self, filename):
         
         if self.is_muted:
@@ -273,18 +298,11 @@ class MainWindow(QMainWindow):
             else:
                 self.play_background_music()
     def toggle_audio(self):
-          new_state = not self.is_muted
-          self.set_mute(new_state)
-          self.audio_button.setText("🔇" if new_state else "🔊")
-
-    def toggle_audio(self):
-        current = self.audio_button.text()
-        new_state = "🔇" if current == "🔊" else "🔊"
-        self.audio_button.setText(new_state)
-
-        # Speak appropriate message
-        message = "Audio muted" if new_state == "🔇" else "Audio unmuted"
-       
+        new_state = not self.is_muted
+        self.set_mute(new_state)
+        self.audio_button.setText("🔇" if new_state else "🔊")
+        print("[AUDIO]", "Muted" if new_state else "Unmuted")
+        
 
       
 
@@ -333,20 +351,19 @@ class MainWindow(QMainWindow):
     
 
     def create_section_footer(self):
-        buttons = ["Help", "About", "Settings"]
 
-        # Translate all button labels
-        translated = {tr(b): b for b in buttons}  # Dict: {Translated_Label: Original}
+        buttons=["Back to Operations","Back to Home","Help", "About", "Settings"]
+        translated=[tr(b) for b in buttons]
 
         return create_footer_buttons(
             list(translated.keys()),  # Translated text shown on buttons
             callbacks={
-                tr("Settings"): self.handle_settings  # Use translated key
+
+                tr("Back to Operations"): lambda: self.load_section("Operations"),
+                "Back to Home": self.back_to_main_menu,
+                tr("Settings"): self.handle_settings
             }
         )
-
-
-        
 
     def handle_settings(self):
         
@@ -392,10 +409,9 @@ class MainWindow(QMainWindow):
             page = load_pages(name, self.back_to_main_menu, difficulty_index=self.current_difficulty, main_window=self)
 
             if hasattr(self, "current_theme"):
-                page.setProperty("theme", self.current_theme)
                 page.style().unpolish(page)
                 page.style().polish(page)
-
+                apply_theme(page, self.current_theme)  # ✅ Apply current theme
             self.section_pages[name] = page
             self.stack.addWidget(page)
 
@@ -403,7 +419,8 @@ class MainWindow(QMainWindow):
         self.menu_widget.hide()
         self.main_footer.hide()
         self.section_footer.show()
-
+        self.update_back_to_operations_visibility(name)
+    
     def back_to_main_menu(self):
         self.play_sound("home_button_sound.wav")  
         self.stack.setCurrentWidget(self.menu_widget)
@@ -428,12 +445,18 @@ class MainWindow(QMainWindow):
 
     def toggle_theme(self):
         self.current_theme = "dark" if self.current_theme == "light" else "light"
-        self.central_widget.setProperty("theme", self.current_theme)
-        self.central_widget.style().unpolish(self.central_widget)
-        self.central_widget.style().polish(self.central_widget)
+        print("Theme switched to:", self.current_theme)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
+        widgets_to_update = [
+            self.central_widget,
+            self.menu_widget,
+            self.main_footer,
+            self.section_footer
+        ] + list(self.section_pages.values())
 
-        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
+        for widget in widgets_to_update:
+            apply_theme(widget, self.current_theme)
+        #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
     
     def setup_shortcuts(self):  # ✅ Newly added method
         exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
@@ -464,6 +487,17 @@ class MainWindow(QMainWindow):
         else:
             event.ignore()
 
+    def update_back_to_operations_visibility(self, section_name):
+        operation_subsections = {
+            "addition", "subtraction", "multiplication",
+            "division", "remainder", "percentage"
+        }
+        normalized = section_name.strip().lower()
+        # Find the button by objectName (assigned in shared_ui)
+        back_to_ops_btn = self.section_footer.findChild(QPushButton, "back_to_operations")
+        if back_to_ops_btn:
+            back_to_ops_btn.setVisible(normalized in operation_subsections)
+    
 
 if __name__ == "__main__":
 

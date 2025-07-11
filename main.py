@@ -144,9 +144,7 @@ class MainWindow(QMainWindow):
         self.bg_player.setVolume(30)
         self.is_muted = False  # if not already present
         self.play_background_music()
-
-        #s
-        # elf.player = self.setup_background_music()
+        #self.player = self.setup_background_music()
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
 
@@ -201,7 +199,7 @@ class MainWindow(QMainWindow):
         # Section buttons
         menu_layout.addLayout(self.create_buttons())
 
-       # GIF Section (wrapped in fixed-height container to avoid layout breaking)
+       # GIF Section 
         self.gif_label = QLabel()
         self.gif_label.setAlignment(Qt.AlignCenter)
         self.movie = QMovie("images/welcome-1.gif")

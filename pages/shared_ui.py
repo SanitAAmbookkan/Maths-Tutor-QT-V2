@@ -129,12 +129,16 @@ def create_vertical_layout(widgets: list) -> QVBoxLayout:
 def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
     footer = QWidget()
     layout = QHBoxLayout()
+    layout.setSpacing(10)
     layout.setContentsMargins(10, 10, 10, 10)
     layout.addStretch()
 
     for name in names:
         btn = QPushButton(name)
-        btn.setFixedSize(*size)
+        btn.setObjectName(name.lower().replace(" ", "_"))
+        btn.setMinimumSize(*size)  # Base size
+        btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        btn.setFont(QFont("Arial", 14))  # or bigger
         btn.setProperty("class", "footer-button")
         if callbacks and name in callbacks:
             btn.clicked.connect(callbacks[name])
@@ -142,16 +146,6 @@ def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
 
     footer.setLayout(layout)
     return footer
-
-
-def create_back_button(callback) -> QPushButton:
-    back_btn = QPushButton(tr("HOME"))
-    back_btn.setFixedSize(150, 40)
-    back_btn.setProperty("class", "menu-button")
-    back_btn.clicked.connect(callback)
-    return back_btn
-
-
 
 def create_answer_input(width=300, height=40, font_size=14) -> QLineEdit:
     input_box = QLineEdit()
@@ -206,9 +200,9 @@ class QuestionWidget(QWidget):
 
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.setFont(QFont("Arial", 16))
+        self.label.setProperty("class", "question-label")
         self.label.setWordWrap(True)
-
+       
         question_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         question_layout.addWidget(self.label)
         question_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
@@ -323,7 +317,7 @@ class QuestionWidget(QWidget):
 
 
 
-def create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=None):
+def create_dynamic_question_ui(section_name, difficulty_index, back_callback,main_window=None, back_to_operations_callback=None):
     container = QWidget()
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignTop)
@@ -332,17 +326,31 @@ def create_dynamic_question_ui(section_name, difficulty_index, back_callback,win
     processor = QuestionProcessor(section_name, difficulty_index)
     processor.process_file()
     
-    question_widget = QuestionWidget(processor,window=window)
+    question_widget = QuestionWidget(processor,main_window)
 
     layout.addWidget(question_widget)
-
-    # Back Button at the bottom
-    back_btn = QPushButton(tr('HOME'))
-    back_btn.setFixedSize(150, 40)
-    back_btn.clicked.connect(back_callback)
-    layout.addWidget(back_btn, alignment=Qt.AlignCenter)
-
     return container
+
+def apply_theme(widget, theme):
+        """
+        Recursively apply theme properties to widget and all children.
+        This ensures styling defined in .qss using [theme="..."] and class="..."] is respected.
+        """
+        if not widget:
+            return
+
+        widget.setProperty("theme", theme)
+        widget.setStyleSheet("")  # clear any inline styles
+        widget.style().unpolish(widget)
+        widget.style().polish(widget)
+
+        for child in widget.findChildren(QWidget):
+            child.setProperty("theme", theme)
+            child.setStyleSheet("")
+            child.style().unpolish(child)
+            child.style().polish(child)
+
+
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, initial_difficulty=1, main_window=None):
         super().__init__(parent)

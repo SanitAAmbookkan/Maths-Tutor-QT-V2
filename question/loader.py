@@ -11,7 +11,7 @@ import random
 class QuestionProcessor:
     def __init__(self, questionType,difficultyIndex):
         self.questionType = questionType
-       
+        self.widget = None
         self.difficultyIndex = difficultyIndex
         self.df = None
         self.variables = []
@@ -170,6 +170,7 @@ class QuestionProcessor:
         is_correct = float(user_answer) == float(correct_answer)
  
         if is_correct:
+            
             self.correct_answers += 1
             self.correct_streak += 1
             self.incorrect_streak = 0
@@ -184,6 +185,7 @@ class QuestionProcessor:
                 self.current_performance_rate += 2
  
         else:
+            
             self.incorrect_streak += 1
             self.correct_streak = 0
             self.current_performance_rate -= 10  # penalty for wrong answer

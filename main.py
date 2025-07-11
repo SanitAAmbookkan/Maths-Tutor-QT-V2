@@ -351,19 +351,18 @@ class MainWindow(QMainWindow):
     
 
     def create_section_footer(self):
+        buttons = ["Back to Operations", "Back to Home", "Help", "About", "Settings"]
+        translated = [tr(b) for b in buttons]
 
-        buttons=["Back to Operations","Back to Home","Help", "About", "Settings"]
-        translated=[tr(b) for b in buttons]
+        callbacks = {
+            tr("Back to Operations"): lambda: self.load_section("Operations"),
+            tr("Back to Home"): self.back_to_main_menu,
+            tr("Help"): self.show_help if hasattr(self, "show_help") else lambda: None,
+            tr("About"): self.show_about if hasattr(self, "show_about") else lambda: None,
+            tr("Settings"): self.handle_settings,
+        }
 
-        return create_footer_buttons(
-            list(translated.keys()),  # Translated text shown on buttons
-            callbacks={
-
-                tr("Back to Operations"): lambda: self.load_section("Operations"),
-                "Back to Home": self.back_to_main_menu,
-                tr("Settings"): self.handle_settings
-            }
-        )
+        return create_footer_buttons(translated, callbacks=callbacks)
 
     def handle_settings(self):
         

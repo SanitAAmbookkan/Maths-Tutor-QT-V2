@@ -29,7 +29,7 @@ class RootWindow(QDialog):
         super().__init__()
         self.minimal = minimal
         self.remember=False
-        self.setWindowTitle("Maths Tutor - Language Selection")
+        self.setWindowTitle("Maths Tutor - Language Selection Window")
         self.setFixedSize(400, 250 if not self.minimal else 150)
         self.init_ui()
         self.load_style("language_dialog.qss")
@@ -122,7 +122,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         
 
-        self.setWindowTitle(f"Maths Tutor - {language}")
+        self.setWindowTitle("Maths Tutor")
         self.resize(900, 600)
         self.setMinimumSize(800, 550) 
         self.current_difficulty = 1  

@@ -11,14 +11,16 @@ from pages.ques_functions import load_pages, upload_excel   # ← your new funct
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
+
+from language.language import get_saved_language,save_selected_language_to_file,tr
+
 from PyQt5.QtGui import QMovie
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtCore import QSize
+
 from PyQt5.QtGui import QKeySequence
 
 
-from language import language 
-from language.language import tr
 
 
 
@@ -26,6 +28,7 @@ class RootWindow(QDialog):
     def __init__(self,minimal=False):
         super().__init__()
         self.minimal = minimal
+        self.remember=False
         self.setWindowTitle("Maths Tutor - Language Selection")
         self.setFixedSize(400, 250 if not self.minimal else 150)
         self.init_ui()
@@ -87,11 +90,19 @@ class RootWindow(QDialog):
 
     def handle_continue(self):
         selected = self.language_combo.currentText()
-        language.selected_language = selected  # ✅ Now this will work
+        from language.language import set_language
+        set_language(selected)
         print(selected)
-        self.accept()
+        self.remember = self.remember_check.isChecked() if not self.minimal else False
 
         
+        if self.remember:
+            print("self.remember working")
+            save_selected_language_to_file(selected)
+        self.accept()
+
+    
+
  
     def create_line(self):
         line = QFrame()
@@ -118,6 +129,10 @@ class MainWindow(QMainWindow):
         self.section_pages = {} 
         self.is_muted = False
         self.language = language
+
+        from language import language
+        language.selected_language=self.language
+
         self.init_ui()
         self.setup_shortcuts()
 
@@ -323,32 +338,40 @@ class MainWindow(QMainWindow):
 
     def create_main_footer_buttons(self):
         buttons = ["Upload", "Help", "About", "Settings"]
-        translated = [tr(b) for b in buttons]
+        translated = {tr(b): b for b in buttons}  
+       
         return create_footer_buttons(
-            translated,
+            list(translated.keys()),
             callbacks={
                 "Upload": self.handle_upload,
-                "Settings": self.handle_settings
+                tr("Settings"): self.handle_settings
         }
     )
 
+    
+
     def create_section_footer(self):
+
         buttons=["Back to Operations","Back to Home","Help", "About", "Settings"]
         translated=[tr(b) for b in buttons]
+
         return create_footer_buttons(
-            translated,
+            list(translated.keys()),  # Translated text shown on buttons
             callbacks={
-                "Back to Operations": lambda: self.load_section("Operations"),
+
+                tr("Back to Operations"): lambda: self.load_section("Operations"),
                 "Back to Home": self.back_to_main_menu,
-                "Settings": self.handle_settings
+                tr("Settings"): self.handle_settings
             }
         )
+
     def handle_settings(self):
         
 
         dialog = SettingsDialog(
             parent=self,
-            initial_difficulty=getattr(self, "current_difficulty", 1)
+            initial_difficulty=getattr(self, "current_difficulty", 1),
+            main_window=self
         )
 
         if dialog.exec_() == QDialog.Accepted:
@@ -484,8 +507,17 @@ if __name__ == "__main__":
         with open(style_file, "r") as f:
             app.setStyleSheet(f.read())
  
-    dialog = RootWindow()
-    if dialog.exec_() == QDialog.Accepted:
-        window = MainWindow(language=dialog.language_combo.currentText())
+
+    
+    lang=get_saved_language()
+    if lang:
+        print(lang)
+        window = MainWindow(language=lang)
         window.show()
         sys.exit(app.exec_())
+    else:
+        dialog = RootWindow()
+        if dialog.exec_() == QDialog.Accepted:
+            window = MainWindow(language=dialog.language_combo.currentText())
+            window.show()
+            sys.exit(app.exec_())

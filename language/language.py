@@ -1,6 +1,30 @@
 # language/language.py
+import os
 
 selected_language = "English"
+
+
+
+CONFIG_FILE = "selected_lang.txt"
+
+def save_selected_language_to_file(lang):
+    print("save to file function called")
+    with open(CONFIG_FILE,"w",encoding="utf-8") as f:
+        f.write(lang)
+
+def get_saved_language():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    return None
+
+def set_language(lang):
+    global selected_language
+    selected_language=lang
+
+def clear_remember_language():
+    if os.path.exists(CONFIG_FILE):
+        os.remove(CONFIG_FILE)
 
 translations = {
     "English": {

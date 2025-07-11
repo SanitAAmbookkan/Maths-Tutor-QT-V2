@@ -119,6 +119,7 @@ def start_uploaded_quiz(main_window):
     processor = QuestionProcessor("custom", 0)  # pass dummy type and difficulty
     print('dummy value passed to init of processor')
     processor.df = uploaded_df  # manually inject uploaded data
+    print(processor.df)
 
     question_widget = QuestionWidget(processor, window=main_window)
     main_window.setCentralWidget(question_widget)

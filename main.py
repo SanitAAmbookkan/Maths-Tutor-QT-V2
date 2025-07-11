@@ -132,7 +132,6 @@ class MainWindow(QMainWindow):
 
         from language import language
         language.selected_language=self.language
-
         self.init_ui()
         self.setup_shortcuts()
 
@@ -175,7 +174,7 @@ class MainWindow(QMainWindow):
         self.theme_button = QPushButton("🌙")
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
-        self.theme_button.setAccessibleName("")
+        self.theme_button.setAccessibleName("Theme Toggle Button")
         self.theme_button.setProperty("class", "menu-button")
 
         from language.language import translations

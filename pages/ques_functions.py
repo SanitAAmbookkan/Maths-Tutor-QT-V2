@@ -9,7 +9,6 @@ from pages.shared_ui import (
     create_colored_widget,
     create_label,
     create_menu_button,
-    create_back_button,
     create_vertical_layout,
     create_dynamic_question_ui,
     create_dynamic_question_ui,
@@ -61,42 +60,12 @@ def load_pages(section_name, back_callback, difficulty_index,
         layout.addSpacing(20)
         layout.addWidget(wrapper)
         layout.addSpacing(30)
-        layout.addWidget(create_back_button(back_callback), alignment=Qt.AlignCenter)
 
         page.setLayout(layout)
         return page
 
     # ✅ For other sections
-    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
-
-
-
-
-
-
-
-    # ✅ For other sections
-    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
-
-
-
-
-
-
-    #widgets.append(create_back_button(back_callback))
-    
-     # --- 🔊 Mute button at bottom-left ---
-    bottom_bar = QWidget()
-    bottom_layout = QHBoxLayout(bottom_bar)
-    bottom_layout.setContentsMargins(0, 0, 0, 0)
-    bottom_layout.addWidget(create_audio_toggle_button(), alignment=Qt.AlignLeft)
-    bottom_layout.addStretch()
-    widgets.append(bottom_bar)
-    
-uploaded_df = None
-
-
-
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,main_window=main_window)
 
 uploaded_df = None
 
@@ -150,6 +119,7 @@ def start_uploaded_quiz(main_window):
     processor = QuestionProcessor("custom", 0)  # pass dummy type and difficulty
     print('dummy value passed to init of processor')
     processor.df = uploaded_df  # manually inject uploaded data
+    print(processor.df)
 
     question_widget = QuestionWidget(processor, window=main_window)
     main_window.setCentralWidget(question_widget)

@@ -11,7 +11,7 @@ import random
 class QuestionProcessor:
     def __init__(self, questionType,difficultyIndex):
         self.questionType = questionType
-       
+        self.widget = None
         self.difficultyIndex = difficultyIndex
         self.df = None
         self.variables = []
@@ -32,28 +32,26 @@ class QuestionProcessor:
     def process_file(self):
         file_path = os.path.join(os.getcwd(), "question", "question.xlsx")
         print(f"Processing file: {file_path}")
- 
-        # Load the Excel file
-        self.df = pd.read_excel(file_path)
+
+        if self.df is None:
+            self.df = pd.read_excel(file_path)
+
         self.df = pd.DataFrame(self.df)
 
+        if self.questionType == "custom":
+            print("[Processor] Custom uploaded file detected — skipping filtering.")
+            return
+
         print(f"[Processor] Filtering with difficulty = {self.difficultyIndex}")
-
         print(f"[Processor] Section: {self.questionType}")
-        #print(f"[Processor] Questions Loaded: {len(self.questions)}")
 
- 
-        # Apply filters: question type and difficulty
         self.df = self.df[
             (self.df["type"].str.lower() == self.questionType.lower()) &
             (self.df["difficulty"] == self.difficultyIndex)
         ]
- 
+
         self.df = self.df.sort_values(by="difficulty", ascending=True)
-        self.current_question_index = 0
- 
-        print("Filtered DataFrame:")
-        print(self.df)
+
     def get_random_question(self):
         if self.df.empty:
             return "No questions found.", None
@@ -170,6 +168,7 @@ class QuestionProcessor:
         is_correct = float(user_answer) == float(correct_answer)
  
         if is_correct:
+            
             self.correct_answers += 1
             self.correct_streak += 1
             self.incorrect_streak = 0
@@ -184,6 +183,7 @@ class QuestionProcessor:
                 self.current_performance_rate += 2
  
         else:
+            
             self.incorrect_streak += 1
             self.correct_streak = 0
             self.current_performance_rate -= 10  # penalty for wrong answer

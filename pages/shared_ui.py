@@ -189,7 +189,7 @@ class QuestionWidget(QWidget):
         self.processor = processor
         self.answer = None
         self.start_time = time()
-        self.max_questions = 15
+        
         self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
@@ -296,9 +296,7 @@ class QuestionWidget(QWidget):
     
             self.hide_feedback_gif()
 
-        if self.processor.total_attempts >= self.max_questions:
-            self.show_final_score()
-            return
+        
         question_text, self.answer = self.processor.get_questions()
         self.start_time = time()
         self.label.setText(question_text)
@@ -319,10 +317,10 @@ class QuestionWidget(QWidget):
                 print("Final Score:", self.processor.correct_answers, "/", self.processor.total_attempts)
                 self.input_box.setDisabled(True)
                  
-                sound_index = random.randint(1, 3)
-                sound_file = f"finished-{sound_index}.mp3"
-                self.main_window.play_sound(sound_file)
-                self.show_feedback_gif(sound_file)
+                #sound_index = random.randint(1, 3)
+                #sound_file = f"finished-{sound_index}.mp3"
+                #self.main_window.play_sound(sound_file)
+                #self.show_feedback_gif(sound_file)
 
             
     def check_answer(self):

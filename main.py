@@ -4,21 +4,17 @@ from PyQt5.QtWidgets import (
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
     QWidget, QGridLayout,QStackedWidget, QSizePolicy, QShortcut, QMessageBox
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt,QUrl, QSize
 from question.loader import QuestionProcessor
 from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from PyQt5.QtCore import QUrl
 
 from language.language import get_saved_language,save_selected_language_to_file,tr
 
-from PyQt5.QtGui import QMovie
-from PyQt5.QtWidgets import QLabel
-from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QMovie, QKeySequence
 
-from PyQt5.QtGui import QKeySequence
 
 
 
@@ -154,7 +150,7 @@ class MainWindow(QMainWindow):
         self.central_widget.setProperty("class", "central-widget")
         self.central_widget.setProperty("theme", "light")
         self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setContentsMargins(4, 4, 4, 4)
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
 
@@ -163,6 +159,7 @@ class MainWindow(QMainWindow):
         # Menu page content
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
+        menu_layout.setSpacing(10)
         menu_layout.setAlignment(Qt.AlignTop)
 
         # Top bar with theme toggle
@@ -198,17 +195,18 @@ class MainWindow(QMainWindow):
 
         # Section buttons
         menu_layout.addLayout(self.create_buttons())
+        menu_layout.addSpacing(10)
+        menu_layout.addStretch()
 
        # GIF Section 
         self.gif_label = QLabel()
         self.gif_label.setAlignment(Qt.AlignCenter)
         self.movie = QMovie("images/welcome-1.gif")
-        self.movie.setScaledSize(QSize(200, 200))
+        self.movie.setScaledSize(QSize(150, 150))
         self.gif_label.setMovie(self.movie)
         self.movie.start()
 
         gif_container = QWidget()
-        gif_container.setFixedHeight(220)
         gif_layout = QHBoxLayout()
         gif_layout.setContentsMargins(0, 0, 0, 0)
         gif_layout.addStretch()
@@ -217,18 +215,6 @@ class MainWindow(QMainWindow):
         gif_container.setLayout(gif_layout)
 
         menu_layout.addWidget(gif_container)
-
-        # Bottom audio toggle
-        bottom_layout = QHBoxLayout()
-        bottom_layout.setContentsMargins(0, 0, 0, 0)
-        self.audio_button = QPushButton("🔊")
-        self.audio_button.setObjectName("audio-button")
-        self.audio_button.setToolTip("Toggle Mute/Unmute")
-        self.audio_button.clicked.connect(self.toggle_audio)
-        bottom_layout.addWidget(self.audio_button, alignment=Qt.AlignLeft)
-        bottom_layout.addStretch()
-        menu_layout.addLayout(bottom_layout)
-
         self.menu_widget.setLayout(menu_layout)
 
         # Stack and footers
@@ -248,6 +234,13 @@ class MainWindow(QMainWindow):
         self.section_footer.hide()
 
         apply_theme(self.central_widget, self.current_theme)
+                
+        # Set focus to the Story button explicitly
+        for btn in self.menu_buttons:
+            if btn.text() == tr("Story"):
+                btn.setFocus()
+                break
+
 
 
     def play_sound(self, filename):
@@ -280,7 +273,16 @@ class MainWindow(QMainWindow):
         if status == QMediaPlayer.EndOfMedia:
             self.bg_player.setPosition(0)
             self.bg_player.play()
-
+    
+    def create_audio_button(self):
+        self.audio_button = QPushButton("🔊")
+        self.audio_button.setObjectName("audio-button")
+        self.audio_button.setToolTip("Toggle Mute/Unmute")
+        self.audio_button.clicked.connect(self.toggle_audio)
+        self.audio_button.setProperty("class", "footer-button")
+        # ✅ Make sure it can receive focus by Tab
+        self.audio_button.setFocusPolicy(Qt.StrongFocus)
+        return self.audio_button
 
     def set_mute(self, state: bool):
         self.is_muted = state
@@ -298,49 +300,59 @@ class MainWindow(QMainWindow):
         
 
       
-
     def create_buttons(self):
         button_grid = QGridLayout()
-        button_grid.setSpacing(10)
-        button_grid.setContentsMargins(10, 10, 10, 10)
+        button_grid.setSpacing(12)
+        button_grid.setContentsMargins(6, 6, 6, 6)
 
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
         self.menu_buttons = []
 
+        # Add 6 section buttons in 2 rows
         for i, name in enumerate(sections):
             translated_name = tr(name)
             button = QPushButton(translated_name)
-
-            # Set a good preferred base size
-            button.setMinimumSize(160, 50)
-            button.setMaximumSize(220, 60)
-            button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+            button.setMinimumSize(160, 45)
+            button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
             button.setProperty("class", "menu-button")
-
-            # Set accessible name for all buttons
             button.setAccessibleName(translated_name)
-
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
 
             self.menu_buttons.append(button)
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
 
-        return button_grid
+        # 🔁 Calculate next available row dynamically
+        next_row = (len(sections) + 2) // 3
 
+        # ✅ Add QUICK PLAY button on new row
+        quick_play_btn = QPushButton(tr("QUICK PLAY"))
+        quick_play_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        quick_play_btn.setMinimumHeight(50)
+        quick_play_btn.setProperty("class", "quick-play-button")
+        quick_play_btn.setAccessibleName("Quick Play")
+        quick_play_btn.clicked.connect(lambda: print("[INFO] QUICK PLAY clicked."))
+
+        button_grid.addWidget(quick_play_btn, next_row, 0, 1, 3, alignment=Qt.AlignCenter)
+
+        return button_grid
+    
 
     def create_main_footer_buttons(self):
         buttons = ["Upload", "Help", "About", "Settings"]
         translated = {tr(b): b for b in buttons}  
-       
-        return create_footer_buttons(
+    
+        footer = create_footer_buttons(
             list(translated.keys()),
             callbacks={
-                "Upload": self.handle_upload,
+                tr("Upload"): self.handle_upload,
                 tr("Settings"): self.handle_settings
-        }
-    )
-
+            }
+        )
+        audio_btn = self.create_audio_button()
+        # ✅ Insert mute button at left (only in main footer)
+        footer.layout().insertWidget(0, audio_btn, alignment=Qt.AlignLeft)
+        return footer
     
 
     def create_section_footer(self):
@@ -451,15 +463,7 @@ class MainWindow(QMainWindow):
         self.current_theme = "dark" if self.current_theme == "light" else "light"
         print("Theme switched to:", self.current_theme)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
-        widgets_to_update = [
-            self.central_widget,
-            self.menu_widget,
-            self.main_footer,
-            self.section_footer
-        ] + list(self.section_pages.values())
-
-        for widget in widgets_to_update:
-            apply_theme(widget, self.current_theme)
+        apply_theme(self.central_widget, self.current_theme)
         #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
     
     def setup_shortcuts(self):  # ✅ Newly added method

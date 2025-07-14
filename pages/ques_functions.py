@@ -13,7 +13,7 @@ from pages.shared_ui import (
     create_dynamic_question_ui,
     create_dynamic_question_ui,
     create_entry_ui,
-    QuestionWidget
+    QuestionWidget, create_font_control_button
 )
 
 from question.loader import QuestionProcessor

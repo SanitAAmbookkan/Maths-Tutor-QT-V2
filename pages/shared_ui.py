@@ -423,6 +423,52 @@ def apply_theme(widget, theme):
             child.setStyleSheet("")
             child.style().unpolish(child)
             child.style().polish(child)
+            
+#font button
+def apply_font_to_all(widget, font: QFont):
+    if widget is None:
+        return
+    widget.setFont(font)
+    for child in widget.findChildren(QWidget):
+        child.setFont(font)
+
+def create_font_control_button(target_window) -> QWidget:
+    container = QWidget()
+    layout = QHBoxLayout()
+    layout.setContentsMargins(0, 0, 0, 0)
+    layout.setSpacing(2)
+    container.setLayout(layout)
+
+    decrease_btn = QPushButton("–")
+    decrease_btn.setFixedSize(24, 24)
+    decrease_btn.setToolTip("Decrease font size")
+
+    label = QPushButton("A")
+    label.setFixedSize(24, 24)
+    label.setToolTip("Font size")
+
+    increase_btn = QPushButton("+")
+    increase_btn.setFixedSize(24, 24)
+    increase_btn.setToolTip("Increase font size")
+
+    font = QFont("Arial", 14)
+    container.setFont(font)
+    container.font_size = 14  # Custom attribute to track font size
+
+    def update_font(change):
+        container.font_size = max(8, min(32, container.font_size + change))
+        new_font = QFont("Arial", container.font_size)
+        apply_font_to_all(target_window, new_font)
+
+    increase_btn.clicked.connect(lambda: update_font(+1))
+    decrease_btn.clicked.connect(lambda: update_font(-1))
+
+    layout.addWidget(decrease_btn)
+    layout.addWidget(label)
+    layout.addWidget(increase_btn)
+
+    return container
+
 
 
 class SettingsDialog(QDialog):

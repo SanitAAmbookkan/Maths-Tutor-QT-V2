@@ -1,10 +1,14 @@
+import os, shutil
+import pandas as pd
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog, QHBoxLayout, QWidget ,QVBoxLayout ,QGridLayout
+from question.loader import  QuestionProcessor
 # pages/ques_functions.py
 
 from pages.shared_ui import (
     create_colored_widget,
     create_label,
     create_menu_button,
-    create_back_button,
     create_vertical_layout,
     create_dynamic_question_ui,
     create_dynamic_question_ui,
@@ -32,6 +36,7 @@ def load_pages(section_name, back_callback, difficulty_index,
  
     # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
+        title = create_label("Choose an Operation", font_size=22, bold=True)
         title = create_label(tr("Choose an Operation"), font_size=22, bold=True)
         title.setAlignment(Qt.AlignCenter)
 
@@ -55,26 +60,18 @@ def load_pages(section_name, back_callback, difficulty_index,
         layout.addSpacing(20)
         layout.addWidget(wrapper)
         layout.addSpacing(30)
-        layout.addWidget(create_back_button(back_callback), alignment=Qt.AlignCenter)
 
         page.setLayout(layout)
         return page
 
     # ✅ For other sections
-    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,window=main_window)
-
-
-
-
-
-
-
-
-
+    return create_dynamic_question_ui(section_name, difficulty_index, back_callback,main_window=main_window)
 
 uploaded_df = None
 
 def upload_excel(parent_widget):
+    
+
     
 
     file_path, _ = QFileDialog.getOpenFileName(parent_widget, "Select Excel File", "", "Excel Files (*.xlsx)")
@@ -122,6 +119,7 @@ def start_uploaded_quiz(main_window):
     processor = QuestionProcessor("custom", 0)  # pass dummy type and difficulty
     print('dummy value passed to init of processor')
     processor.df = uploaded_df  # manually inject uploaded data
+    print(processor.df)
 
     question_widget = QuestionWidget(processor, window=main_window)
     main_window.setCentralWidget(question_widget)

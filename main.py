@@ -468,34 +468,15 @@ class MainWindow(QMainWindow):
             apply_theme(widget, self.current_theme)
         #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
     
-    def setup_shortcuts(self):  # ✅ Newly added method
+    def setup_shortcuts(self):
         exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
         exit_shortcut.setContext(Qt.ApplicationShortcut)
-        exit_shortcut.activated.connect(self.confirm_exit)
+        exit_shortcut.activated.connect(QApplication.quit)
 
-    def confirm_exit(self):
-        reply = QMessageBox.question(
-            self,
-            "Exit Application",
-            "Are you sure you want to exit?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        if reply == QMessageBox.Yes:
-            QApplication.quit()
 
-    def closeEvent(self, event):
-        reply = QMessageBox.question(
-            self,
-            "Exit Application",
-            "Are you sure you want to exit?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        if reply == QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
+    
+
+    
 
     def update_back_to_operations_visibility(self, section_name):
         operation_subsections = {

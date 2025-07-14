@@ -235,12 +235,16 @@ class MainWindow(QMainWindow):
 
         apply_theme(self.central_widget, self.current_theme)
                 
-        # Set focus to the Story button explicitly
+        
+        # ✅ Always ensure Story button gets focus on UI load
+        self.focus_story_button()
+
+    def focus_story_button(self):
+        """✅ Ensure Story button is focused (called on init and return)"""
         for btn in self.menu_buttons:
             if btn.text() == tr("Story"):
                 btn.setFocus()
                 break
-
 
 
     def play_sound(self, filename):
@@ -443,6 +447,7 @@ class MainWindow(QMainWindow):
         self.menu_widget.show()
         self.section_footer.hide()
         self.main_footer.show()
+        self.focus_story_button()
 
     def clear_main_layout(self):
         for i in reversed(range(self.main_layout.count())):

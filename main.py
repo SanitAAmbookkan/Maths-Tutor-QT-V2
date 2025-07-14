@@ -467,9 +467,8 @@ class MainWindow(QMainWindow):
         for widget in widgets_to_update:
             apply_theme(widget, self.current_theme)
         #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
-        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
     
-    def setup_shortcuts(self):  
+    def setup_shortcuts(self):  # ✅ Newly added method
         exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
         exit_shortcut.setContext(Qt.ApplicationShortcut)
         exit_shortcut.activated.connect(self.confirm_exit)
@@ -509,9 +508,6 @@ class MainWindow(QMainWindow):
         if back_to_ops_btn:
             back_to_ops_btn.setVisible(normalized in operation_subsections)
     
-     
- 
-
 
 if __name__ == "__main__":
 

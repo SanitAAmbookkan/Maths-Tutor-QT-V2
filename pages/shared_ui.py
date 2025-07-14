@@ -1,19 +1,29 @@
+# pages/shared_ui.py
+
 from PyQt5.QtWidgets import ( QWidget, QLabel, QHBoxLayout, QPushButton,
                               QVBoxLayout,QSizePolicy, QDialog, QSlider, QDialogButtonBox
-                              ,QSpacerItem, QLineEdit)
-from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
+                              ,QSpacerItem,QLineEdit,QMessageBox)
+
 from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
 from question.loader import QuestionProcessor
 from time import time
-import random
-import random
-DIFFICULTY_LEVELS = ["Very Easy", "Easy", "Medium", "Hard", "Very Hard"]
-from language.language import tr
+import random 
+from tts.tts_worker import TextToSpeech
 
+
+DIFFICULTY_LEVELS = ["Simple", "Easy", "Medium", "Hard", "Challenging"]
+
+from language.language import set_language,clear_remember_language,tr
+
+from language.language import tr
+from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtGui import QMovie
 
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import QTimer
 
 def create_entry_ui(main_window) -> QWidget:
     entry_widget = QWidget()
@@ -47,56 +57,6 @@ def create_entry_ui(main_window) -> QWidget:
 
 
 
-
-def create_entry_ui(main_window) -> QWidget:
-    entry_widget = QWidget()
-    layout = QVBoxLayout()
-    layout.setAlignment(Qt.AlignCenter)
-
-    label = QLabel("Click below to start the quiz")
-    label.setFont(QFont("Arial", 24))
-    label.setAlignment(Qt.AlignCenter)
-
-    button = QPushButton("Start")
-    button.setFont(QFont("Arial", 16))
-    button.setFixedSize(200, 50)
-    button.setStyleSheet("background-color: #28a745; color: white; border-radius: 8px;")
-
-    def start_quiz():
-        print("Start button clicked")  # ✅ DEBUG POINT
-        from pages.ques_functions import start_uploaded_quiz
-        start_uploaded_quiz(main_window)
-
-    button.clicked.connect(start_quiz)
-
-    layout.addWidget(label)
-    layout.addSpacing(20)
-    layout.addWidget(button, alignment=Qt.AlignCenter)
-
-    entry_widget.setLayout(layout)
-    return entry_widget
-
-def create_theme_toggle_button(callback) -> QPushButton:
-    button = QPushButton("🌙")
-    button.setFixedSize(40, 40)
-    button.setToolTip("Toggle Light/Dark Theme")
-    button.clicked.connect(callback)
-    button.setObjectName("themeToggleButton")
-    return button
-
-def apply_theme(widget, theme: str, button: QPushButton = None):
-    widget.setProperty("theme", theme)
-    widget.style().unpolish(widget)
-    widget.style().polish(widget)
-    if button:
-        button.setText("☀️" if theme == "dark" else "🌙")
-
-    
-    # Apply recursively to all child widgets
-    for child in widget.findChildren(QWidget):
-        child.setProperty("theme", theme)
-        child.style().unpolish(child)
-        child.style().polish(child)
 
 # settings_manager.py
 class SettingsManager:
@@ -129,7 +89,7 @@ def create_colored_widget(color: str = "#ffffff") -> QWidget:
     widget.setPalette(palette)
     return widget
 
-def create_label(text: str, font_size=50, bold=True) -> QLabel:
+def create_label(text: str, font_size=16, bold=True) -> QLabel:
     label = QLabel(text)
     label.setWordWrap(True)  # allow wrapping of long text
     label.setAlignment(Qt.AlignCenter)  # center text
@@ -140,7 +100,7 @@ def create_label(text: str, font_size=50, bold=True) -> QLabel:
     return label
    
 
-def create_colored_page(title: str, color: str = "#518c33") -> QWidget:
+def create_colored_page(title: str, color: str = "#d0f0c0") -> QWidget:
     page = create_colored_widget(color)
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignCenter)
@@ -174,12 +134,16 @@ def create_vertical_layout(widgets: list) -> QVBoxLayout:
 def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
     footer = QWidget()
     layout = QHBoxLayout()
+    layout.setSpacing(10)
     layout.setContentsMargins(10, 10, 10, 10)
     layout.addStretch()
 
     for name in names:
         btn = QPushButton(name)
-        btn.setFixedSize(*size)
+        btn.setObjectName(name.lower().replace(" ", "_"))
+        btn.setMinimumSize(*size)  # Base size
+        btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        btn.setFont(QFont("Arial", 14))  # or bigger
         btn.setProperty("class", "footer-button")
         if callbacks and name in callbacks:
             btn.clicked.connect(callbacks[name])
@@ -187,18 +151,6 @@ def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
 
     footer.setLayout(layout)
     return footer
-
-
-def create_back_button(callback) -> QPushButton:
-    back_btn = QPushButton("🏠")
-    back_btn.setObjectName("home")
-    back_btn = QPushButton(tr("HOME"))
-    back_btn.setFixedSize(150, 40)
-    back_btn.setProperty("class", "menu-button")
-    back_btn.clicked.connect(callback)
-    return back_btn
-
-
 
 def create_answer_input(width=300, height=40, font_size=14) -> QLineEdit:
     input_box = QLineEdit()
@@ -229,54 +181,20 @@ def wrap_center(widget):
     container.setLayout(layout)
     return container
 
-
-#audio_button
-audio_muted = False
-
-def toggle_audio(button: QPushButton):
-    global audio_muted
-    audio_muted = not audio_muted
-    update_audio_icon(button)
-    print("Muted" if audio_muted else "Unmuted")
-
-def update_audio_icon(button: QPushButton):
-    icon = "🔇" if audio_muted else "🔊"
-    button.setText(icon)
-    button.setToolTip("Unmute" if audio_muted else "Mute")
-    button.setProperty("audioMuted", audio_muted)
-    button.style().unpolish(button)
-    button.style().polish(button)
-
-def create_audio_toggle_button() -> QPushButton:
-    button = QPushButton()
-    button.setObjectName("audioButton")
-    button.setFixedSize(QSize(50, 50))
-    update_audio_icon(button)
-    button.setFocusPolicy(Qt.StrongFocus)  # Accept keyboard focus
-    button.setDefault(True)  # Allow Enter key to work
-
-    # Connect both mouse click and Enter key
-    button.clicked.connect(lambda: toggle_audio(button))
-
-    return button
-
-
-
 class QuestionWidget(QWidget):
     def __init__(self, processor,window=None):
         super().__init__()
         self.processor = processor
         self.answer = None
         self.start_time = time()
-        self.max_questions = 10
-        self.max_questions = 10
+        self.max_questions = 15
         self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
         self.main_window = window
-        self.main_window = window
+        self.tts = TextToSpeech() # your TTS instance
         self.init_ui()
-        
+       
     def init_ui(self):
         self.question_area = QWidget()
         question_layout = QVBoxLayout()
@@ -285,9 +203,9 @@ class QuestionWidget(QWidget):
 
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.setFont(QFont("Arial", 16))
+        self.label.setProperty("class", "question-label")
         self.label.setWordWrap(True)
-
+       
         question_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         question_layout.addWidget(self.label)
         question_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
@@ -308,74 +226,102 @@ class QuestionWidget(QWidget):
         self.layout.addWidget(self.result_label)
         self.layout.addStretch()
 
-        self.load_new_question()
+        self.gif_feedback_label = QLabel()
+        self.gif_feedback_label.setVisible(False)  # Hidden by default
+        self.processor.widget = self
+        # Make sure your widget has a layout
+        #layout = self.layout
+        #if layout is None:
+         #   layout = QVBoxLayout()
+          #  self.setLayout(layout)
 
-    def load_new_question(self):
-        self.end_button = QPushButton("End Session")
-        self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
-        self.end_button.setFixedWidth(150)
-        self.end_button.clicked.connect(self.end_session)
-        self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
-        self.layout.addStretch()
+        #layout.addWidget(self.gif_feedback_label, alignment=Qt.AlignCenter)
+        self.gif_feedback_label = QLabel()
+        self.gif_feedback_label.setVisible(False)
+        self.gif_feedback_label.setAlignment(Qt.AlignCenter)
+        self.gif_feedback_label.setScaledContents(True)
+        self.gif_feedback_label.setMinimumSize(300, 300)
+        self.gif_feedback_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        
+
+        # Add the GIF label to your layout (ideally after the question/answer widgets)
+        self.layout.addWidget(self.gif_feedback_label, alignment=Qt.AlignCenter)
+
+
+
         self.load_new_question()
         
+    def show_feedback_gif(self, sound_filename):
+        
+        if sound_filename == "question":
+            print("[GIF] Question gif")
+            gif_name = f"question-{random.choice([1, 2])}.gif"
+        else:  
+            gif_name = sound_filename.replace(".mp3", ".gif")
+        gif_path = f"images/{gif_name}"
+
+        movie = QMovie(gif_path)
+
+        # Set a fixed size to scale the gif
+        movie.setScaledSize(QSize(200, 200))  # Adjust this as needed
+
+        self.gif_feedback_label.setFixedSize(200, 200)
+        self.gif_feedback_label.setAlignment(Qt.AlignCenter)
+        self.gif_feedback_label.setMovie(movie)
+        self.gif_feedback_label.setVisible(True)
+        movie.start()
+
+
+            
+    def hide_feedback_gif(self):
+        self.gif_feedback_label.setVisible(False)
+        self.gif_feedback_label.clear()
+
     def end_session(self):
+        #if hasattr(self, 'bg_player') and self.bg_player is not None:
+    
+        self.main_window.bg_player.stop()   
+        print("[BG MUSIC] Stopped due to end session.")
         if self.main_window:
             from main import MainWindow  # Import your section menu window
-            self.main_window.setCentralWidget(MainWindow(self.main_window))
+            self.main_window.back_to_main_menu()
 
 
 
     
     def load_new_question(self):
+        if hasattr(self, "gif_feedback_label"):
+    
+            self.hide_feedback_gif()
+
         if self.processor.total_attempts >= self.max_questions:
             self.show_final_score()
             return
-        self.end_button = QPushButton("End Session")
-        self.end_button.setStyleSheet("background-color: red; color: white; padding: 10px;")
-        self.end_button.setFixedWidth(150)
-        self.end_button.clicked.connect(self.end_session)
-        self.layout.addWidget(self.end_button, alignment=Qt.AlignCenter)
-
-        self.layout.addStretch()
-        
-
-        self.load_new_question()
-    
-
-    def end_session(self):
-        if self.main_window:
-            from main import MainWindow  # Import your section menu window
-            self.main_window.setCentralWidget(MainWindow(self.main_window))
-
-
-
-    
-    def load_new_question(self):
-        if self.processor.total_attempts >= self.max_questions:
-            self.show_final_score()
-            return
-        question_text, self.answer = self.processor.get_random_question()
+        question_text, self.answer = self.processor.get_questions()
         self.start_time = time()
         self.label.setText(question_text)
+        
         self.input_box.setText("")  # ✨ Clear only the input
         self.result_label.setText("")
-    
+        self.show_feedback_gif("question")
+
+
+        # Speak question for accessibility
+        if hasattr(self, 'tts'):
+            self.tts.speak(question_text)
+
     def show_final_score(self):
                 self.result_label.setText(
                     "🎉 Quiz Finished!"
                 )
                 print("Final Score:", self.processor.correct_answers, "/", self.processor.total_attempts)
+                self.input_box.setDisabled(True)
+                 
                 sound_index = random.randint(1, 3)
-                self.main_window.play_sound(f"finished-{sound_index}.mp3")
-    
-    def show_final_score(self):
-                self.result_label.setText(
-                    "🎉 Quiz Finished!"
-                )
-                print("Final Score:", self.processor.correct_answers, "/", self.processor.total_attempts)
-                sound_index = random.randint(1, 3)
-                self.main_window.play_sound(f"finished-{sound_index}.mp3")
+                sound_file = f"finished-{sound_index}.mp3"
+                self.main_window.play_sound(sound_file)
+                self.show_feedback_gif(sound_file)
+
             
     def check_answer(self):
         try:
@@ -388,84 +334,64 @@ class QuestionWidget(QWidget):
 
             if correct:
                 self.result_label.setText("✅ Correct!")
-                print("[DEBUG] main_window:", self.main_window)
+
+
+
+               
                 sound_index = random.randint(1, 3)
                 
                 if elapsed < 5:
                     if self.main_window and callable(getattr(self.main_window, "play_sound", None)):
-                        self.main_window.play_sound(f"excellent-{sound_index}.mp3")
+                        sound_file = f"excellent-{sound_index}.mp3"
+                        
                 elif elapsed < 10:
                     if self.main_window:
-                        self.main_window.play_sound(f"very-good-{sound_index}.mp3")
+                        sound_file =f"very-good-{sound_index}.mp3"
                 elif elapsed < 15:
                     if self.main_window:
-                        self.main_window.play_sound(f"good-{sound_index}.mp3")
+                        sound_file =f"good-{sound_index}.mp3"
                 elif elapsed < 20:
                     if self.main_window:
-                        self.main_window.play_sound(f"not-bad-{sound_index}.mp3")
+                        sound_file =f"not-bad-{sound_index}.mp3"
                 else:
                     if self.main_window:
-                        self.main_window.play_sound(f"okay-{sound_index}.mp3")
-
+                        sound_file =f"okay-{sound_index}.mp3"
+                self.main_window.play_sound(sound_file)
+                self.show_feedback_gif(sound_file)
+                  # ✅ Show the GIF
                 self.processor.retry_count = 0
-                print("[DEBUG] main_window:", self.main_window)
-                sound_index = random.randint(1, 3)
-                
-                if elapsed < 5:
-                    if self.main_window and callable(getattr(self.main_window, "play_sound", None)):
-                        self.main_window.play_sound(f"excellent-{sound_index}.mp3")
-                elif elapsed < 10:
-                    if self.main_window:
-                        self.main_window.play_sound(f"very-good-{sound_index}.mp3")
-                elif elapsed < 15:
-                    if self.main_window:
-                        self.main_window.play_sound(f"good-{sound_index}.mp3")
-                elif elapsed < 20:
-                    if self.main_window:
-                        self.main_window.play_sound(f"not-bad-{sound_index}.mp3")
-                else:
-                    if self.main_window:
-                        self.main_window.play_sound(f"okay-{sound_index}.mp3")
 
-                self.processor.retry_count = 0
-                self.load_new_question()  # ✨ Just update content
-
+                #
+                # QTimer.singleShot(2000, lambda: self.show_feedback_gif("question-1.mp3"))
+                QTimer.singleShot(2000, self.load_new_question)
 
             else:
                 self.processor.retry_count += 1
-                sound_index = random.randint(1, 3)
+                sound_index = random.randint(1, 2)
                 if self.processor.retry_count == 1:
-                    self.main_window.play_sound(f"wrong-anwser-{sound_index}.mp3")
+                    sound_file = f"wrong-anwser-{sound_index}.mp3"
                 else:
-                    self.main_window.play_sound(f"wrong-anwser-repeted-{sound_index}.mp3")
+                    sound_file = f"wrong-anwser-repeted-{sound_index}.mp3"
+
+                self.main_window.play_sound(sound_file)
+                self.show_feedback_gif(sound_file)
+
                 
                 if self.processor.retry_count < 3:
                     self.result_label.setText(f"❌ Wrong. Try again ({self.processor.retry_count}/3)")
                 else:
                     self.result_label.setText("❌ Wrong. Moving to next question.")
+                    #QTimer.singleShot(2000, lambda: self.show_feedback_gif("question-1.mp3"))
                     self.processor.retry_count = 0
-                    self.load_new_question()
-                self.processor.retry_count += 1
-                sound_index = random.randint(1, 3)
-                if self.processor.retry_count == 1:
-                    self.main_window.play_sound(f"wrong-anwser-{sound_index}.mp3")
-                else:
-                    self.main_window.play_sound(f"wrong-anwser-repeted-{sound_index}.mp3")
-                
-                if self.processor.retry_count < 3:
-                    self.result_label.setText(f"❌ Wrong. Try again ({self.processor.retry_count}/3)")
-                else:
-                    self.result_label.setText("❌ Wrong. Moving to next question.")
-                    self.processor.retry_count = 0
-                    self.load_new_question()
+                    QTimer.singleShot(2000, self.load_new_question)
+
 
         except Exception as e:
             self.result_label.setText(f"Error: {str(e)}")
 
 
 
-
-def create_dynamic_question_ui(section_name, difficulty_index, back_callback, main_window):
+def create_dynamic_question_ui(section_name, difficulty_index, back_callback,main_window=None, back_to_operations_callback=None):
     container = QWidget()
     layout = QVBoxLayout()
     layout.setAlignment(Qt.AlignTop)
@@ -474,19 +400,31 @@ def create_dynamic_question_ui(section_name, difficulty_index, back_callback, ma
     processor = QuestionProcessor(section_name, difficulty_index)
     processor.process_file()
     
-    question_widget = QuestionWidget(processor,window=window)
-
     question_widget = QuestionWidget(processor,main_window)
 
     layout.addWidget(question_widget)
-
-    # Back Button at the bottom
-    back_btn = QPushButton(tr('HOME'))
-    back_btn.setFixedSize(150, 40)
-    back_btn.clicked.connect(back_callback)
-    layout.addWidget(back_btn, alignment=Qt.AlignCenter)
-
     return container
+
+def apply_theme(widget, theme):
+        """
+        Recursively apply theme properties to widget and all children.
+        This ensures styling defined in .qss using [theme="..."] and class="..."] is respected.
+        """
+        if not widget:
+            return
+
+        widget.setProperty("theme", theme)
+        widget.setStyleSheet("")  # clear any inline styles
+        widget.style().unpolish(widget)
+        widget.style().polish(widget)
+
+        for child in widget.findChildren(QWidget):
+            child.setProperty("theme", theme)
+            child.setStyleSheet("")
+            child.style().unpolish(child)
+            child.style().polish(child)
+
+
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, initial_difficulty=1, main_window=None):
         super().__init__(parent)
@@ -495,6 +433,8 @@ class SettingsDialog(QDialog):
 
         self.main_window = main_window
         self.updated_language = main_window.language if main_window else "English"
+
+        self.tts = TextToSpeech()  # TTS instance
 
         self.difficulty_slider = QSlider(Qt.Horizontal)
         self.difficulty_slider.setMinimum(0)
@@ -506,10 +446,15 @@ class SettingsDialog(QDialog):
         self.difficulty_slider.setTracking(True)
         self.difficulty_slider.setFocusPolicy(Qt.StrongFocus)
         self.difficulty_slider.setFocus()
+        self.difficulty_slider.setAccessibleName("Difficulty slider")
+        self.difficulty_slider.setAccessibleDescription(f"Use left or right arrow keys to select difficulty level. The levels are Simple, Easy, Medium, Hard and challenging.")
         self.difficulty_slider.setValue(initial_difficulty)
-        self.difficulty_slider.valueChanged.connect(self.update_difficulty_label)
-
         self.difficulty_label = create_label(DIFFICULTY_LEVELS[initial_difficulty], font_size=12)
+       
+        self.difficulty_slider.valueChanged.connect(self.update_difficulty_label)
+        
+
+    
 
         # 🔁 Reset Language Button
         self.language_reset_btn = QPushButton("Reset Language")
@@ -531,16 +476,61 @@ class SettingsDialog(QDialog):
         self.setLayout(layout)
 
     def update_difficulty_label(self, index):
-        self.difficulty_label.setText(DIFFICULTY_LEVELS[index])
+        level = DIFFICULTY_LEVELS[index]
+        self.difficulty_label.setText(level)
+
+    # For screen reader
+        self.difficulty_slider.setAccessibleDescription(
+            f"Difficulty level selected: {level}. Use left or right arrow keys to change it. "
+            "Levels are: Simple, Easy, Medium, Hard, and Challenging."
+            )
+
+    # Optional: Also update the label's description (if used by screen readers)
+        self.difficulty_label.setAccessibleDescription(
+         f"Currently selected difficulty is {level}"
+         )   
+
+    def update_difficulty_label(self, value):
+            level_name = DIFFICULTY_LEVELS[value]
+            self.difficulty_label.setText(level_name)
+            self.difficulty_slider.setAccessibleDescription(
+                f"Difficulty level selected: {level_name}. Use left or right arrow keys to change it. Levels are: Simple, Easy, Medium, Hard, and Challenging."
+            )
+
+    def update_difficulty_label(self, index):
+        level = DIFFICULTY_LEVELS[index]
+        self.difficulty_label.setText(level)
+        self.difficulty_label.setAccessibleDescription(f"Currently selected difficulty is {level}")
+
 
     def handle_reset_language(self):
-        from main import RootWindow, MainWindow # Dynamically import to avoid circular imports
+        from main import RootWindow, MainWindow  # Dynamically import to avoid circular imports
+        
 
-        dialog = RootWindow()
+        
+        clear_remember_language()
+        # Open language selection dialog (in minimal mode)
+        dialog = RootWindow(minimal=True)
         if dialog.exec_() == QDialog.Accepted:
+            # Get selected language
             new_lang = dialog.language_combo.currentText()
+
+            # Update global and local language state
+            set_language(new_lang)
             self.updated_language = new_lang
-            print(f"[Language Reset] New language: {new_lang}")
+
+            # Show confirmation
+            QMessageBox.information(self, "Language Changed",
+                                    f"Language changed to {new_lang}. The app will now reload to apply changes.")
+            print( "changed language",new_lang)
+            # Restart main window with new language
+            if self.main_window:
+                self.main_window.close()  # Close existing window
+                self.main_window = MainWindow(language=new_lang)
+                self.main_window.show()
+
+            self.close()  # Close settings dialog
+
 
     def accept_settings(self):
         selected_index = self.difficulty_slider.value()
@@ -554,5 +544,4 @@ class SettingsDialog(QDialog):
 
     def get_selected_language(self):
         return self.updated_language
-        
-
+    

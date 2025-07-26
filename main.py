@@ -339,7 +339,7 @@ class MainWindow(QMainWindow):
     
 
     def create_main_footer_buttons(self):
-        buttons = ["Upload", "Help", "About", "Settings"]
+        buttons = ["Upload", "Settings"]
         translated = {tr(b): b for b in buttons}  
     
         footer = create_footer_buttons(
@@ -356,15 +356,13 @@ class MainWindow(QMainWindow):
     
 
     def create_section_footer(self):
-        buttons = ["Back to Operations", "Back to Home", "Help", "About", "Settings"]
+        buttons = ["Back to Operations", "Back to Home", "Settings"]
         translated = [tr(b) for b in buttons]
 
         # Create a mapping from translated labels to callbacks
         callbacks = {
             tr("Back to Operations"): lambda: self.load_section("Operations"),
             tr("Back to Home"): self.back_to_main_menu,
-            tr("Help"): self.show_help if hasattr(self, "show_help") else lambda: None,
-            tr("About"): self.show_about if hasattr(self, "show_about") else lambda: None,
             tr("Settings"): self.handle_settings
         }
 

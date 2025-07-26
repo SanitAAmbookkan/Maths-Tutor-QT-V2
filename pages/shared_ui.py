@@ -133,14 +133,14 @@ def create_footer_buttons(names, callbacks=None, size=(90, 30)) -> QWidget:
     footer = QWidget()
     layout = QHBoxLayout()
     layout.setSpacing(10)
-    layout.setContentsMargins(10, 10, 10, 10)
+    layout.setContentsMargins(0, 0, 0, 0)
     layout.addStretch()
 
     for name in names:
         btn = QPushButton(name)
         btn.setObjectName(name.lower().replace(" ", "_"))
-        btn.setMinimumSize(*size)  # Base size
-        btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        btn.adjustSize() 
         btn.setFont(QFont("Arial", 14))  # or bigger
         btn.setProperty("class", "footer-button")
         if callbacks and name in callbacks:
@@ -451,15 +451,34 @@ class SettingsDialog(QDialog):
         button_box.accepted.connect(self.accept_settings)
         button_box.rejected.connect(self.reject)
 
+        self.setMinimumSize(400, 280)  # Better size for spacing
+
         layout = QVBoxLayout()
+        layout.setSpacing(12)  # Add breathing space between widgets
+        layout.setContentsMargins(20, 20, 20, 20)
+
         layout.addWidget(create_label("Select Difficulty:", font_size=12, bold=False))
         layout.addWidget(self.difficulty_slider)
         layout.addWidget(self.difficulty_label)
-        layout.addSpacing(15)
+
         layout.addWidget(self.language_reset_btn)
-        layout.addSpacing(10)
+
+        # Add Help and About side by side
+        extra_buttons_layout = QHBoxLayout()
+        self.help_button = QPushButton("Help")
+        self.about_button = QPushButton("About")
+        for btn in [self.help_button, self.about_button]:
+            btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            btn.setFixedHeight(30)
+        extra_buttons_layout.addWidget(self.help_button)
+        extra_buttons_layout.addWidget(self.about_button)
+        layout.addLayout(extra_buttons_layout)
+
+        layout.addStretch()
         layout.addWidget(button_box)
+
         self.setLayout(layout)
+
 
     def update_difficulty_label(self, index):
         level = DIFFICULTY_LEVELS[index]

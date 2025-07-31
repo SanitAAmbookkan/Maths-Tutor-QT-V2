@@ -295,8 +295,64 @@ class MainWindow(QMainWindow):
     def start_game_mode(self):
         QMessageBox.information(self, "Coming Soon", "Game Mode is under development!")
 
+
+
+
+
+
+
+
+
+
+
+
     def start_quickplay_mode(self):
-        QMessageBox.information(self, "Coming Soon", "Quickplay is under development!")
+        from pages.shared_ui import QuestionWidget
+        from question.loader import QuestionProcessor
+
+        section_type = "Story"  # or dynamically pick if needed
+        processor = QuestionProcessor(section_type, difficultyIndex=[1, 2])
+        processor.process_file()
+
+        if processor.df.empty:
+            print("[Quickplay] No questions found for quickplay.")
+            return
+
+        question_widget = QuestionWidget(processor, window=self)
+
+        # Clear existing layout if needed
+        if hasattr(self, "main_layout"):
+            # Remove all widgets from main layout
+            for i in reversed(range(self.main_layout.count())):
+                widget = self.main_layout.itemAt(i).widget()
+                if widget:
+                    self.main_layout.removeWidget(widget)
+                    widget.deleteLater()
+            self.main_layout.addWidget(question_widget)
+        else:
+            # Set new layout if not already set
+            layout = QVBoxLayout()
+            layout.addWidget(question_widget)
+            container = QWidget()
+            container.setLayout(layout)
+            self.setCentralWidget(container)
+
+        print("[Quickplay] Question widget loaded.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     def play_sound(self, filename):

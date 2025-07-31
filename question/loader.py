@@ -42,15 +42,25 @@ class QuestionProcessor:
             print("[Processor] Custom uploaded file detected — skipping filtering.")
             return
 
-        print(f"[Processor] Filtering with difficulty = {self.difficultyIndex}")
-        print(f"[Processor] Section: {self.questionType}")
+        # Normalize
+        self.df["type"] = self.df["type"].astype(str)
+        self.df["difficulty"] = pd.to_numeric(self.df["difficulty"], errors="coerce")
+
+        print(f"[Processor] Filtering with section: {self.questionType}")
+        
+        # Define difficulty levels to include
+        if isinstance(self.difficultyIndex, list):
+            valid_difficulties = self.difficultyIndex
+        else:
+            valid_difficulties = [self.difficultyIndex]
 
         self.df = self.df[
             (self.df["type"].str.lower() == self.questionType.lower()) &
-            (self.df["difficulty"] == self.difficultyIndex)
+            (self.df["difficulty"].isin(valid_difficulties))
         ]
 
-        self.df = self.df.sort_values(by="difficulty", ascending=True)
+        print(self.df.head())  # Debug
+
 
     def get_random_question(self):
         if self.df.empty:

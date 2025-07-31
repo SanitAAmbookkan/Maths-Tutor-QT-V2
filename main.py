@@ -293,7 +293,39 @@ class MainWindow(QMainWindow):
         self.play_sound("button_click.wav")
 
     def start_game_mode(self):
-        QMessageBox.information(self, "Coming Soon", "Game Mode is under development!")
+        self.clear_main_layout()
+
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignCenter)
+        widget.setLayout(layout)
+
+        label = QLabel("Select Game Difficulty")
+        label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet("font-size: 24px; font-weight: bold;")
+        layout.addWidget(label)
+
+        # Difficulty Buttons
+        difficulties = [
+            ("🟢 Easy", 1),
+            ("🟡 Medium", 2),
+            ("🔴 Hard", 3),
+            ("💀 Extra Hard", 4)
+        ]
+
+        for text, index in difficulties:
+            btn = QPushButton(text)
+            btn.setMinimumSize(200, 50)
+            btn.setStyleSheet("font-size: 18px; padding: 10px;")
+            btn.clicked.connect(lambda _, idx=index: self.load_game_questions(idx))
+            layout.addWidget(btn)
+
+        # Back Button
+        back_btn = QPushButton("⬅ Back")
+        back_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.startup_widget))
+        layout.addWidget(back_btn)
+
+        self.main_layout.addWidget(widget)
 
 
 
@@ -304,40 +336,33 @@ class MainWindow(QMainWindow):
 
 
 
+
+    def load_game_questions(self, difficulty_index):
+        from pages.shared_ui import QuestionWidget
+        from question.loader import QuestionProcessor
+        import random
+        taking_random_type=["Multiplication","Percentage","Division","Currency","Story"]
+        random_type = random.choice(taking_random_type)
+        print("[load_game_question] current random type",random_type)
+        processor = QuestionProcessor(random_type, difficultyIndex=[difficulty_index])
+        processor.process_file()
+
+        self.clear_main_layout()
+        question_widget = QuestionWidget(processor, window=self)
+        self.main_layout.addWidget(question_widget)
 
 
     def start_quickplay_mode(self):
         from pages.shared_ui import QuestionWidget
         from question.loader import QuestionProcessor
 
-        section_type = "Story"  # or dynamically pick if needed
-        processor = QuestionProcessor(section_type, difficultyIndex=[1, 2])
+        processor = QuestionProcessor("Story", difficultyIndex=[0, 1])  # Easy + Medium
         processor.process_file()
 
-        if processor.df.empty:
-            print("[Quickplay] No questions found for quickplay.")
-            return
-
+        self.clear_main_layout()
         question_widget = QuestionWidget(processor, window=self)
+        self.main_layout.addWidget(question_widget)
 
-        # Clear existing layout if needed
-        if hasattr(self, "main_layout"):
-            # Remove all widgets from main layout
-            for i in reversed(range(self.main_layout.count())):
-                widget = self.main_layout.itemAt(i).widget()
-                if widget:
-                    self.main_layout.removeWidget(widget)
-                    widget.deleteLater()
-            self.main_layout.addWidget(question_widget)
-        else:
-            # Set new layout if not already set
-            layout = QVBoxLayout()
-            layout.addWidget(question_widget)
-            container = QWidget()
-            container.setLayout(layout)
-            self.setCentralWidget(container)
-
-        print("[Quickplay] Question widget loaded.")
 
 
 

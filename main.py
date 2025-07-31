@@ -226,7 +226,12 @@ class MainWindow(QMainWindow):
 
         self.stack = QStackedWidget()
         self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.stack.addWidget(self.menu_widget)
+        #self.stack.addWidget(self.menu_widget)
+        self.startup_widget = self.create_mode_selection_page()
+        self.stack.addWidget(self.startup_widget)  # index 0
+        self.stack.addWidget(self.menu_widget)     # index 1
+        self.stack.setCurrentWidget(self.startup_widget)
+
 
         self.main_layout.addWidget(self.stack)
         self.main_footer = self.create_main_footer_buttons()
@@ -254,6 +259,44 @@ class MainWindow(QMainWindow):
         menu_layout.addLayout(gif_layout)
 
         apply_theme(self.central_widget, self.current_theme)
+
+    def create_mode_selection_page(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignCenter)
+        widget.setLayout(layout)
+
+        label = QLabel("Choose Mode")
+        label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet("font-size: 24px; font-weight: bold;")
+        layout.addWidget(label)
+
+        buttons = [
+            ("🎓 Learning Mode", self.start_learning_mode),
+            ("🎮 Game Mode", self.start_game_mode),
+            ("⚡ Quickplay", self.start_quickplay_mode)
+        ]
+
+        for text, callback in buttons:
+            btn = QPushButton(text)
+            btn.setMinimumSize(220, 60)
+            btn.setStyleSheet("font-size: 18px; padding: 10px;")
+            btn.clicked.connect(callback)
+            layout.addWidget(btn)
+
+        return widget
+
+    def start_learning_mode(self):
+        self.stack.setCurrentWidget(self.menu_widget)
+        self.main_footer.show()
+        self.section_footer.hide()
+        self.play_sound("button_click.wav")
+
+    def start_game_mode(self):
+        QMessageBox.information(self, "Coming Soon", "Game Mode is under development!")
+
+    def start_quickplay_mode(self):
+        QMessageBox.information(self, "Coming Soon", "Quickplay is under development!")
 
 
     def play_sound(self, filename):

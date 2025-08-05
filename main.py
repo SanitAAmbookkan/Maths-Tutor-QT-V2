@@ -262,7 +262,7 @@ class MainWindow(QMainWindow):
 
         label = QLabel("Choose Mode")
         label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("font-size: 24px; font-weight: bold;")
+        label.setProperty("class", "main-title")
         layout.addWidget(label)
 
         buttons = [
@@ -273,8 +273,9 @@ class MainWindow(QMainWindow):
 
         for text, callback in buttons:
             btn = QPushButton(text)
-            btn.setMinimumSize(220, 60)
-            btn.setStyleSheet("font-size: 18px; padding: 10px;")
+            btn.setMinimumSize(240, 65)  # ✅ Uniform large size for all mode buttons
+            btn.setProperty("class", "menu-button")  # ✅ Set QSS class for each button
+            btn.setProperty("theme", self.current_theme)
             btn.clicked.connect(callback)
             layout.addWidget(btn)
 

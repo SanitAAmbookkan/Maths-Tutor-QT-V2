@@ -144,7 +144,6 @@ class MainWindow(QMainWindow):
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
 
-        
     def init_ui(self):
         self.central_widget = QWidget()
         self.central_widget.setProperty("class", "central-widget")
@@ -154,18 +153,9 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
 
-        self.current_theme = "light"  # Initial theme
+        self.current_theme = "light"
 
-        # Menu page content
-        self.menu_widget = QWidget()
-        menu_layout = QVBoxLayout()
-        menu_layout.setSpacing(10)
-        menu_layout.setAlignment(Qt.AlignTop)
-
-        # Top bar with theme toggle
-        top_bar = QHBoxLayout()
-        top_bar.setContentsMargins(0, 0, 0, 0)
-
+        # ✅ Global top bar with theme toggle button
         self.theme_button = QPushButton("🌙")
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
@@ -176,9 +166,22 @@ class MainWindow(QMainWindow):
         desc = f"{translations[self.language]['welcome']} {translations[self.language]['ready'].format(lang=self.language)}"
         self.theme_button.setAccessibleDescription(desc)
 
-        top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
-        top_bar.addStretch()
-        menu_layout.addLayout(top_bar)
+        # ✅ Add theme button to global top bar
+        self.top_bar = QWidget()
+        self.top_bar_layout = QHBoxLayout(self.top_bar)
+        self.top_bar_layout.setContentsMargins(0, 0, 0, 0)
+        self.top_bar_layout.setSpacing(10)
+        self.top_bar_layout.addWidget(self.theme_button, alignment=Qt.AlignLeft)
+        self.top_bar_layout.addStretch()
+
+
+        self.main_layout.addWidget(self.top_bar)  # ✅ Add top bar to top of layout
+
+        # ✅ Menu page setup
+        self.menu_widget = QWidget()
+        menu_layout = QVBoxLayout()
+        menu_layout.setSpacing(10)
+        menu_layout.setAlignment(Qt.AlignTop)
 
         # Title and subtitle
         title = QLabel(tr("welcome"))
@@ -198,7 +201,7 @@ class MainWindow(QMainWindow):
         menu_layout.addSpacing(10)
         menu_layout.addStretch()
 
-       # GIF Section 
+        # GIF Section 
         self.gif_label = QLabel()
         self.gif_label.setAlignment(Qt.AlignCenter)
         self.movie = QMovie("images/welcome-1.gif")
@@ -220,12 +223,11 @@ class MainWindow(QMainWindow):
         # Stack and footers
         self.stack = QStackedWidget()
         self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        #self.stack.addWidget(self.menu_widget)
+
         self.startup_widget = self.create_mode_selection_page()
         self.stack.addWidget(self.startup_widget)  # index 0
         self.stack.addWidget(self.menu_widget)     # index 1
         self.stack.setCurrentWidget(self.startup_widget)
-
 
         self.main_layout.addWidget(self.stack)
 
@@ -240,8 +242,8 @@ class MainWindow(QMainWindow):
         self.section_footer.hide()
 
         apply_theme(self.central_widget, self.current_theme)
-                
-        
+
+            
         # ✅ Always ensure Story button gets focus on UI load
         self.focus_story_button()
 

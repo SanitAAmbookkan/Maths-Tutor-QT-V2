@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from question.loader import QuestionProcessor
-from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog, create_font_control_button 
+from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -188,8 +188,7 @@ class MainWindow(QMainWindow):
 
         menu_layout.addLayout(top_bar)
         
-        font_button = create_font_control_button(self)
-        top_bar.addWidget(font_button, alignment=Qt.AlignRight)
+        
 
         
         title = QLabel(tr("welcome")) #welcome to maths tutor 

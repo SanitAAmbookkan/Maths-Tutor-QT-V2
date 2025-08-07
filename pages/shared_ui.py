@@ -158,7 +158,7 @@ def create_answer_input(width=300, height=40, font_size=14) -> QLineEdit:
     input_box.setAlignment(Qt.AlignCenter)
     input_box.setPlaceholderText(tr("Enter your answer"))
     input_box.setFont(QFont("Arial", font_size))
-    input_box.setValidator(QIntValidator(0, 1000000))  # only positive integers
+    input_box.setValidator(QIntValidator(-1000000, 1000000))  # only positive integers
     input_box.setStyleSheet("""
         QLineEdit {
             border: 2px solid #ccc;
@@ -423,6 +423,9 @@ def apply_theme(widget, theme):
             child.setStyleSheet("")
             child.style().unpolish(child)
             child.style().polish(child)
+            
+
+
 
 
 class SettingsDialog(QDialog):

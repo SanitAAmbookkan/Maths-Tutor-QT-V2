@@ -290,7 +290,7 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(self.menu_widget)
         self.main_footer.show()
         self.section_footer.hide()
-        self.play_sound("button_click.wav")
+        self.play_sound("click-button.wav")
 
     def start_game_mode(self):
         self.clear_main_layout()

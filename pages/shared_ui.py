@@ -182,12 +182,12 @@ def wrap_center(widget):
     return container
 
 class QuestionWidget(QWidget):
-    def __init__(self, processor,window=None):
+    def __init__(self, processor,window=None,next_question_callback=None):
         super().__init__()
         self.processor = processor
         self.answer = None
         self.start_time = time()
-        self.max_questions = 15
+        self.next_question_callback = next_question_callback
         self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
@@ -216,7 +216,8 @@ class QuestionWidget(QWidget):
 
         self.result_label = QLabel("")
         self.result_label.setAlignment(Qt.AlignCenter)
-        self.result_label.setFont(QFont("Arial", 12))
+        
+        self.result_label.setFont(QFont("Arial", 46))
 
         #🧱 Assemble the main layout
         self.layout.addWidget(self.question_area)
@@ -294,9 +295,7 @@ class QuestionWidget(QWidget):
     
             self.hide_feedback_gif()
 
-        if self.processor.total_attempts >= self.max_questions:
-            self.show_final_score()
-            return
+        
         question_text, self.answer = self.processor.get_questions()
         self.start_time = time()
         self.label.setText(question_text)
@@ -310,18 +309,7 @@ class QuestionWidget(QWidget):
         if hasattr(self, 'tts'):
             self.tts.speak(question_text)
 
-    def show_final_score(self):
-                self.result_label.setText(
-                    "🎉 Quiz Finished!"
-                )
-                print("Final Score:", self.processor.correct_answers, "/", self.processor.total_attempts)
-                self.input_box.setDisabled(True)
-                 
-                sound_index = random.randint(1, 3)
-                sound_file = f"finished-{sound_index}.mp3"
-                self.main_window.play_sound(sound_file)
-                self.show_feedback_gif(sound_file)
-
+    
             
     def check_answer(self):
         try:
@@ -333,7 +321,8 @@ class QuestionWidget(QWidget):
             self.processor.submit_answer(user_answer, self.answer, elapsed)
 
             if correct:
-                self.result_label.setText("✅ Correct!")
+                #self.result_label.setMinimumHeight(200)
+                self.result_label.setText('<span style="font-size:16pt;">Correct!</span>')
 
 
 
@@ -341,21 +330,28 @@ class QuestionWidget(QWidget):
                 sound_index = random.randint(1, 3)
                 
                 if elapsed < 5:
+                    feedback_text = "🌟 Excellent"
                     if self.main_window and callable(getattr(self.main_window, "play_sound", None)):
                         sound_file = f"excellent-{sound_index}.mp3"
                         
                 elif elapsed < 10:
                     if self.main_window:
+                        feedback_text = "👏 Very Good"
                         sound_file =f"very-good-{sound_index}.mp3"
                 elif elapsed < 15:
                     if self.main_window:
+                        feedback_text = "👍 Good"
                         sound_file =f"good-{sound_index}.mp3"
                 elif elapsed < 20:
                     if self.main_window:
+                        feedback_text = "👌 Not Bad"
                         sound_file =f"not-bad-{sound_index}.mp3"
                 else:
                     if self.main_window:
+                        feedback_text = "🙂 Okay"
                         sound_file =f"okay-{sound_index}.mp3"
+
+                self.result_label.setText(f'<span style="font-size:16pt;">{feedback_text}</span>')
                 self.main_window.play_sound(sound_file)
                 self.show_feedback_gif(sound_file)
                   # ✅ Show the GIF
@@ -363,7 +359,8 @@ class QuestionWidget(QWidget):
 
                 #
                 # QTimer.singleShot(2000, lambda: self.show_feedback_gif("question-1.mp3"))
-                QTimer.singleShot(2000, self.load_new_question)
+                QTimer.singleShot(2000, self.call_next_question)
+
 
             else:
                 self.processor.retry_count += 1
@@ -377,17 +374,18 @@ class QuestionWidget(QWidget):
                 self.show_feedback_gif(sound_file)
 
                 
-                if self.processor.retry_count < 3:
-                    self.result_label.setText(f"❌ Wrong. Try again ({self.processor.retry_count}/3)")
-                else:
-                    self.result_label.setText("❌ Wrong. Moving to next question.")
-                    #QTimer.singleShot(2000, lambda: self.show_feedback_gif("question-1.mp3"))
-                    self.processor.retry_count = 0
-                    QTimer.singleShot(2000, self.load_new_question)
+                self.result_label.setText('<span style="font-size:16pt;">Try Again.</span>')
+               
 
 
         except Exception as e:
             self.result_label.setText(f"Error: {str(e)}")
+
+    def call_next_question(self):
+        if hasattr(self, "next_question_callback") and self.next_question_callback:
+            self.next_question_callback()
+        else:
+            self.load_new_question()
 
 
 

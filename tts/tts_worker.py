@@ -13,7 +13,9 @@ class TTSWorker(QThread):
     def run(self):
         if self._is_running:
             engine.say(self.text)
-            engine.runAndWait()
+            if not engine._inLoop:
+                engine.runAndWait()
+
         self.finished.emit()
 
     def stop(self):

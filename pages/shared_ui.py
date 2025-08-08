@@ -182,12 +182,12 @@ def wrap_center(widget):
     return container
 
 class QuestionWidget(QWidget):
-    def __init__(self, processor,window=None):
+    def __init__(self, processor,window=None,next_question_callback=None):
         super().__init__()
         self.processor = processor
         self.answer = None
         self.start_time = time()
-        
+        self.next_question_callback = next_question_callback
         self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.layout)
@@ -359,7 +359,8 @@ class QuestionWidget(QWidget):
 
                 #
                 # QTimer.singleShot(2000, lambda: self.show_feedback_gif("question-1.mp3"))
-                QTimer.singleShot(2000, self.load_new_question)
+                QTimer.singleShot(2000, self.call_next_question)
+
 
             else:
                 self.processor.retry_count += 1
@@ -379,6 +380,12 @@ class QuestionWidget(QWidget):
 
         except Exception as e:
             self.result_label.setText(f"Error: {str(e)}")
+
+    def call_next_question(self):
+        if hasattr(self, "next_question_callback") and self.next_question_callback:
+            self.next_question_callback()
+        else:
+            self.load_new_question()
 
 
 

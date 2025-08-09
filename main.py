@@ -285,7 +285,7 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(self.menu_widget)
         self.main_footer.show()
         self.section_footer.hide()
-        self.play_sound("button_click.wav")
+        self.play_sound("click-button.wav")
 
     def start_game_mode(self):
         self.clear_main_layout()
@@ -330,21 +330,27 @@ class MainWindow(QMainWindow):
 
 
 
-
-
     def load_game_questions(self, difficulty_index):
         from pages.shared_ui import QuestionWidget
         from question.loader import QuestionProcessor
         import random
-        taking_random_type=["Multiplication","Percentage","Division","Currency","Story"]
-        random_type = random.choice(taking_random_type)
-        print("[load_game_question] current random type",random_type)
-        processor = QuestionProcessor(random_type, difficultyIndex=[difficulty_index])
-        processor.process_file()
 
         self.clear_main_layout()
-        question_widget = QuestionWidget(processor, window=self)
-        self.main_layout.addWidget(question_widget)
+
+        self.game_types = ["Multiplication", "Percentage", "Division", "Currency", "Story", "Time", "Distance", "Bellring","Addition", "Subtraction", "Remainder"]
+        self.game_difficulty = difficulty_index
+
+        def load_next_question():
+            random_type = random.choice(self.game_types)
+            print("[load_game_question] current random type:", random_type)
+            processor = QuestionProcessor(random_type, difficultyIndex=[self.game_difficulty])
+            processor.process_file()
+            question_widget = QuestionWidget(processor, window=self, next_question_callback=load_next_question)
+            self.clear_main_layout()
+            self.main_layout.addWidget(question_widget)
+
+        load_next_question()
+
 
 
     def start_quickplay_mode(self):

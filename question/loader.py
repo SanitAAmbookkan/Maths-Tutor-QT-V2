@@ -61,7 +61,30 @@ class QuestionProcessor:
 
         print(self.df.head())  # Debug
 
+    def quickplay(self):
+        self.process_for_quickplay()
+        return self.get_random_question()
+    def process_for_quickplay(self):
+        file_path = os.path.join(os.getcwd(), "question", "question.xlsx")
+        print(f"Processing file: {file_path}")
 
+        if self.df is None:
+            self.df = pd.read_excel(file_path)
+
+        self.df = pd.DataFrame(self.df)
+
+        if self.questionType == "custom":
+            print("[Processor] Custom uploaded file detected — skipping filtering.")
+            return
+
+        print(f"[Processor] Filtering with difficulty = {self.difficultyIndex}")
+        
+        self.df = self.df[
+            
+            (self.df["difficulty"] == self.difficultyIndex)
+        ]
+
+        self.df = self.df.sort_values(by="difficulty", ascending=True)
     def get_random_question(self):
         if self.df.empty:
             return "No questions found.", None

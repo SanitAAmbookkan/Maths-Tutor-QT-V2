@@ -4,23 +4,18 @@ from PyQt5.QtWidgets import (
     QPushButton, QComboBox, QHBoxLayout, QCheckBox, QFrame,
     QWidget, QGridLayout,QStackedWidget, QSizePolicy, QShortcut, QMessageBox
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt,QUrl, QSize
 from question.loader import QuestionProcessor
-from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog
+from pages.shared_ui import create_footer_buttons, SettingsDialog
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl
-
-from language.language import get_saved_language,save_selected_language_to_file,tr
-
-from PyQt5.QtGui import QMovie
-from PyQt5.QtWidgets import QLabel
-from PyQt5.QtCore import QSize
-
 from PyQt5.QtGui import QKeySequence
 
 
+from language import language 
+from language.language import tr
 
 
 
@@ -28,8 +23,7 @@ class RootWindow(QDialog):
     def __init__(self,minimal=False):
         super().__init__()
         self.minimal = minimal
-        self.remember=False
-        self.setWindowTitle("Maths Tutor - Language Selection Window")
+        self.setWindowTitle("Maths Tutor - Language Selection")
         self.setFixedSize(400, 250 if not self.minimal else 150)
         self.init_ui()
         self.load_style("language_dialog.qss")
@@ -55,7 +49,6 @@ class RootWindow(QDialog):
         if not self.minimal:
             self.remember_check = QCheckBox("Remember my selection")
             self.remember_check.setChecked(False)
-            self.remember_check.setProperty("class", "checkbox")
             layout.addWidget(self.remember_check)
         
         layout.addStretch()
@@ -70,7 +63,6 @@ class RootWindow(QDialog):
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.setAutoDefault(False)
         self.cancel_button.setShortcut(Qt.Key_Escape)
-        self.cancel_button.setProperty("class", "danger-button") 
 
 
         btns = QHBoxLayout()
@@ -90,19 +82,11 @@ class RootWindow(QDialog):
 
     def handle_continue(self):
         selected = self.language_combo.currentText()
-        from language.language import set_language
-        set_language(selected)
+        language.selected_language = selected  # ✅ Now this will work
         print(selected)
-        self.remember = self.remember_check.isChecked() if not self.minimal else False
-
-        
-        if self.remember:
-            print("self.remember working")
-            save_selected_language_to_file(selected)
         self.accept()
 
-    
-
+        
  
     def create_line(self):
         line = QFrame()
@@ -122,16 +106,13 @@ class MainWindow(QMainWindow):
         super().__init__()
         
 
-        self.setWindowTitle("Maths Tutor")
+        self.setWindowTitle(f"Maths Tutor - {language}")
         self.resize(900, 600)
         self.setMinimumSize(800, 550) 
         self.current_difficulty = 1  
         self.section_pages = {} 
         self.is_muted = False
         self.language = language
-
-        from language import language
-        language.selected_language=self.language
         self.init_ui()
         self.setup_shortcuts()
 
@@ -144,68 +125,74 @@ class MainWindow(QMainWindow):
         self.bg_player.setVolume(30)
         self.is_muted = False  # if not already present
         self.play_background_music()
-
         #self.player = self.setup_background_music()
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
 
-        
     def init_ui(self):
         self.central_widget = QWidget()
         self.central_widget.setProperty("class", "central-widget")
         self.central_widget.setProperty("theme", "light")
         self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setContentsMargins(4, 4, 4, 4)
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
 
-        # Track current theme
         self.current_theme = "light"
         
         self.menu_widget = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setAlignment(Qt.AlignCenter)
-        # Top bar for theme toggle
+    
+         # Top bar for theme toggle
         top_bar = QHBoxLayout()
         top_bar.setContentsMargins(0, 0, 0, 0)
         
 
         # Theme button (🌙 for light, ☀️ for dark)
         self.theme_button = QPushButton("🌙")
+        self.theme_button.setFixedSize(40, 40)
         self.theme_button.setToolTip("Toggle Light/Dark Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
-        self.theme_button.setAccessibleName("Theme Toggle Button")
-        self.theme_button.setProperty("class", "menu-button")
+        self.theme_button.setAccessibleName("")
 
         from language.language import translations
         desc = f"{translations[self.language]['welcome']} {translations[self.language]['ready'].format(lang=self.language)}"
         self.theme_button.setAccessibleDescription(desc)
 
+        # ✅ Add theme button to global top bar
+        self.top_bar = QWidget()
+        self.top_bar_layout = QHBoxLayout(self.top_bar)
+        self.top_bar_layout.setContentsMargins(0, 0, 0, 0)
+        self.top_bar_layout.setSpacing(10)
+        self.top_bar_layout.addWidget(self.theme_button, alignment=Qt.AlignLeft)
+        self.top_bar_layout.addStretch()
 
 
-        top_bar.addWidget(self.theme_button, alignment=Qt.AlignLeft)
-        top_bar.addStretch()
+        self.main_layout.addWidget(self.top_bar)  # ✅ Add top bar to top of layout
 
-        menu_layout.addLayout(top_bar)
-        
-        
+        # ✅ Menu page setup
+        self.menu_widget = QWidget()
+        menu_layout = QVBoxLayout()
+        menu_layout.setSpacing(10)
+        menu_layout.setAlignment(Qt.AlignTop)
 
-        
-        title = QLabel(tr("welcome")) #welcome to maths tutor 
-
-
+        # Title and subtitle
+        title = QLabel(tr("welcome"))
         title.setAlignment(Qt.AlignCenter)
         title.setProperty("class", "main-title")
- 
+
         subtitle = QLabel(tr("ready").format(lang=self.language))
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setProperty("class", "subtitle")
-
+       
         menu_layout.addWidget(title)
         menu_layout.addWidget(subtitle)
         menu_layout.addSpacing(20)
 
+        # Section buttons
         menu_layout.addLayout(self.create_buttons())
+        menu_layout.addSpacing(10)
         menu_layout.addStretch()
         # Bottom-left audio toggle
         bottom_layout = QHBoxLayout()
@@ -213,6 +200,7 @@ class MainWindow(QMainWindow):
 
         self.audio_button = QPushButton("🔊")
         self.audio_button.setObjectName("audio-button")
+        self.audio_button.setFixedSize(50, 50)
         self.audio_button.setToolTip("Toggle Mute/Unmute")
         self.audio_button.clicked.connect(self.toggle_audio)
 
@@ -223,162 +211,23 @@ class MainWindow(QMainWindow):
 
         self.menu_widget.setLayout(menu_layout)
 
+        # Stack and footers
         self.stack = QStackedWidget()
         self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        #self.stack.addWidget(self.menu_widget)
-        self.startup_widget = self.create_mode_selection_page()
-        self.stack.addWidget(self.startup_widget)  # index 0
-        self.stack.addWidget(self.menu_widget)     # index 1
-        self.stack.setCurrentWidget(self.startup_widget)
-
+        self.stack.addWidget(self.menu_widget)
 
         self.main_layout.addWidget(self.stack)
+
         self.main_footer = self.create_main_footer_buttons()
         self.section_footer = self.create_section_footer()
+        for footer in [self.main_footer, self.section_footer]:
+            footer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            footer.setMinimumHeight(63)
+
         self.main_layout.addWidget(self.main_footer)
         self.main_layout.addWidget(self.section_footer)
         self.section_footer.hide()
-
-     
-
-        self.gif_label = QLabel()
-        self.gif_label.setAlignment(Qt.AlignCenter)
-        self.gif_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        self.movie = QMovie("images/welcome-1.gif")
-        self.movie.setScaledSize(QSize(200, 200))  # Adjust size as needed
-        self.gif_label.setMovie(self.movie)
-        self.movie.start()
-
-        gif_layout = QHBoxLayout()
-        gif_layout.addStretch()
-        gif_layout.addWidget(self.gif_label)
-        gif_layout.addStretch()
-
-        menu_layout.addLayout(gif_layout)
-
-        apply_theme(self.central_widget, self.current_theme)
-
-    def create_mode_selection_page(self):
-        widget = QWidget()
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignCenter)
-        widget.setLayout(layout)
-
-        label = QLabel("Choose Mode")
-        label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("font-size: 24px; font-weight: bold;")
-        layout.addWidget(label)
-
-        buttons = [
-            ("🎓 Learning Mode", self.start_learning_mode),
-            ("🎮 Game Mode", self.start_game_mode),
-            ("⚡ Quickplay", self.start_quickplay_mode)
-        ]
-
-        for text, callback in buttons:
-            btn = QPushButton(text)
-            btn.setMinimumSize(220, 60)
-            btn.setStyleSheet("font-size: 18px; padding: 10px;")
-            btn.clicked.connect(callback)
-            layout.addWidget(btn)
-
-        return widget
-
-    def start_learning_mode(self):
-        self.stack.setCurrentWidget(self.menu_widget)
-        self.main_footer.show()
-        self.section_footer.hide()
-        self.play_sound("button_click.wav")
-
-    def start_game_mode(self):
-        self.clear_main_layout()
-
-        widget = QWidget()
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignCenter)
-        widget.setLayout(layout)
-
-        label = QLabel("Select Game Difficulty")
-        label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("font-size: 24px; font-weight: bold;")
-        layout.addWidget(label)
-
-        # Difficulty Buttons
-        difficulties = [
-            ("🟢 Easy", 1),
-            ("🟡 Medium", 2),
-            ("🔴 Hard", 3),
-            ("💀 Extra Hard", 4)
-        ]
-
-        for text, index in difficulties:
-            btn = QPushButton(text)
-            btn.setMinimumSize(200, 50)
-            btn.setStyleSheet("font-size: 18px; padding: 10px;")
-            btn.clicked.connect(lambda _, idx=index: self.load_game_questions(idx))
-            layout.addWidget(btn)
-
-        # Back Button
-        back_btn = QPushButton("⬅ Back")
-        back_btn.clicked.connect(lambda: self.stack.setCurrentWidget(self.startup_widget))
-        layout.addWidget(back_btn)
-
-        self.main_layout.addWidget(widget)
-
-
-
-
-
-
-
-
-
-
-
-    def load_game_questions(self, difficulty_index):
-        from pages.shared_ui import QuestionWidget
-        from question.loader import QuestionProcessor
-        import random
-        taking_random_type=["Multiplication","Percentage","Division","Currency","Story"]
-        random_type = random.choice(taking_random_type)
-        print("[load_game_question] current random type",random_type)
-        processor = QuestionProcessor(random_type, difficultyIndex=[difficulty_index])
-        processor.process_file()
-
-        self.clear_main_layout()
-        question_widget = QuestionWidget(processor, window=self)
-        self.main_layout.addWidget(question_widget)
-
-
-    def start_quickplay_mode(self):
-        from pages.shared_ui import QuestionWidget
-        from question.loader import QuestionProcessor
-
-        processor = QuestionProcessor("Story", difficultyIndex=[0, 1])  # Easy + Medium
-        processor.process_file()
-
-        self.clear_main_layout()
-        question_widget = QuestionWidget(processor, window=self)
-        self.main_layout.addWidget(question_widget)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     def play_sound(self, filename):
         
         if self.is_muted:
@@ -409,7 +258,16 @@ class MainWindow(QMainWindow):
         if status == QMediaPlayer.EndOfMedia:
             self.bg_player.setPosition(0)
             self.bg_player.play()
-
+    
+    def create_audio_button(self):
+        self.audio_button = QPushButton("🔊")
+        self.audio_button.setObjectName("audio-button")
+        self.audio_button.setToolTip("Toggle Mute/Unmute")
+        self.audio_button.clicked.connect(self.toggle_audio)
+        self.audio_button.setProperty("class", "footer-button")
+        # ✅ Make sure it can receive focus by Tab
+        self.audio_button.setFocusPolicy(Qt.StrongFocus)
+        return self.audio_button
 
     def set_mute(self, state: bool):
         self.is_muted = state
@@ -420,91 +278,86 @@ class MainWindow(QMainWindow):
             else:
                 self.play_background_music()
     def toggle_audio(self):
-        new_state = not self.is_muted
-        self.set_mute(new_state)
-        self.audio_button.setText("🔇" if new_state else "🔊")
-        print("[AUDIO]", "Muted" if new_state else "Unmuted")
-        
+          new_state = not self.is_muted
+          self.set_mute(new_state)
+          self.audio_button.setText("🔇" if new_state else "🔊")
+
+    def toggle_audio(self):
+        current = self.audio_button.text()
+        new_state = "🔇" if current == "🔊" else "🔊"
+        self.audio_button.setText(new_state)
+
+        # Speak appropriate message
+        message = "Audio muted" if new_state == "🔇" else "Audio unmuted"
+       
 
       
 
     def create_buttons(self):
         button_grid = QGridLayout()
-        button_grid.setSpacing(10)
-        button_grid.setContentsMargins(10, 10, 10, 10)
+        button_grid.setSpacing(12)
+        button_grid.setContentsMargins(6, 6, 6, 6)
 
         sections = ["Story", "Time", "Currency", "Distance", "Bellring", "Operations"]
         self.menu_buttons = []
 
+        # Add 6 section buttons in 2 rows
         for i, name in enumerate(sections):
             translated_name = tr(name)
             button = QPushButton(translated_name)
-
-            # Set a good preferred base size
-            button.setMinimumSize(160, 50)
-            button.setMaximumSize(220, 60)
-            button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+            button.setMinimumSize(160, 45)
+            button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
             button.setProperty("class", "menu-button")
-
-            # Set accessible name for all buttons
             button.setAccessibleName(translated_name)
-
             button.clicked.connect(lambda checked, n=name: self.load_section(n))
 
             self.menu_buttons.append(button)
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
 
-        return button_grid
+        # 🔁 Calculate next available row dynamically
+        next_row = (len(sections) + 2) // 3
 
+        # ✅ Add QUICK PLAY button on new row
+        quick_play_btn = QPushButton(tr("QUICK PLAY"))
+        quick_play_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        quick_play_btn.setMinimumHeight(50)
+        quick_play_btn.setProperty("class", "quick-play-button")
+        quick_play_btn.setAccessibleName("Quick Play")
+        quick_play_btn.clicked.connect(lambda: print("[INFO] QUICK PLAY clicked."))
+
+        button_grid.addWidget(quick_play_btn, next_row, 0, 1, 3, alignment=Qt.AlignCenter)
+
+        return button_grid
+    
 
     def create_main_footer_buttons(self):
         buttons = ["Upload", "Help", "About", "Settings"]
-        translated = {tr(b): b for b in buttons}  
-       
+        translated = [tr(b) for b in buttons]
         return create_footer_buttons(
-            list(translated.keys()),
+            translated,
             callbacks={
                 "Upload": self.handle_upload,
-                tr("Settings"): self.handle_settings
+                "Settings": self.handle_settings
         }
     )
 
-    
-
     def create_section_footer(self):
-        buttons = ["Back to Operations", "Back to Home", "Help", "About", "Settings"]
-        translated = [tr(b) for b in buttons]
-
-        # Create a mapping from translated labels to callbacks
-        callbacks = {
-            tr("Back to Operations"): lambda: self.load_section("Operations"),
-            tr("Back to Home"): self.back_to_main_menu,
-            tr("Help"): self.show_help if hasattr(self, "show_help") else lambda: None,
-            tr("About"): self.show_about if hasattr(self, "show_about") else lambda: None,
-            tr("Settings"): self.handle_settings
-        }
-
-        # Create the footer with translated labels and callbacks
-        footer = create_footer_buttons(translated, callbacks=callbacks)
-
-        # ✅ Assign objectName for visibility toggling (very important!)
-        for btn in footer.findChildren(QPushButton):
-            if btn.text() == tr("Back to Operations"):
-                btn.setObjectName("back_to_operations")
-            elif btn.text() == tr("Back to Home"):
-                btn.setObjectName("back_to_home")
-
-        return footer
-
+        buttons=["Help", "About", "Settings"]
+        translated=[tr(b) for b in buttons]
+        return create_footer_buttons(
+            translated,
+            callbacks={
+                "Settings": self.handle_settings
+            }
+        )
 
     def handle_settings(self):
         
 
         dialog = SettingsDialog(
             parent=self,
-            initial_difficulty=getattr(self, "current_difficulty", 1),
-            main_window=self
+            initial_difficulty=getattr(self, "current_difficulty", 1)
         )
 
         if dialog.exec_() == QDialog.Accepted:
@@ -542,9 +395,10 @@ class MainWindow(QMainWindow):
             page = load_pages(name, self.back_to_main_menu, difficulty_index=self.current_difficulty, main_window=self)
 
             if hasattr(self, "current_theme"):
+                page.setProperty("theme", self.current_theme)
                 page.style().unpolish(page)
                 page.style().polish(page)
-                apply_theme(page, self.current_theme)  # ✅ Apply current theme
+
             self.section_pages[name] = page
             self.stack.addWidget(page)
 
@@ -552,14 +406,14 @@ class MainWindow(QMainWindow):
         self.menu_widget.hide()
         self.main_footer.hide()
         self.section_footer.show()
-        self.update_back_to_operations_visibility(name)
-    
+
     def back_to_main_menu(self):
         self.play_sound("home_button_sound.wav")  
         self.stack.setCurrentWidget(self.menu_widget)
         self.menu_widget.show()
         self.section_footer.hide()
         self.main_footer.show()
+        self.focus_story_button()
 
     def clear_main_layout(self):
         for i in reversed(range(self.main_layout.count())):
@@ -578,35 +432,42 @@ class MainWindow(QMainWindow):
 
     def toggle_theme(self):
         self.current_theme = "dark" if self.current_theme == "light" else "light"
-        print("Theme switched to:", self.current_theme)
+        self.central_widget.setProperty("theme", self.current_theme)
+        self.central_widget.style().unpolish(self.central_widget)
+        self.central_widget.style().polish(self.central_widget)
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
-        widgets_to_update = [
-            self.central_widget,
-            self.menu_widget,
-            self.main_footer,
-            self.section_footer
-        ] + list(self.section_pages.values())
 
-        for widget in widgets_to_update:
-            apply_theme(widget, self.current_theme)
-        #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
+        self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
     
     def setup_shortcuts(self):
         exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
         exit_shortcut.setContext(Qt.ApplicationShortcut)
-        exit_shortcut.activated.connect(QApplication.quit)
+        exit_shortcut.activated.connect(self.confirm_exit)
 
-    def update_back_to_operations_visibility(self, section_name):
-        operation_subsections = {
-            "addition", "subtraction", "multiplication",
-            "division", "remainder", "percentage"
-        }
-        normalized = section_name.strip().lower()
-        # Find the button by objectName (assigned in shared_ui)
-        back_to_ops_btn = self.section_footer.findChild(QPushButton, "back_to_operations")
-        if back_to_ops_btn:
-            back_to_ops_btn.setVisible(normalized in operation_subsections)
-    
+    def confirm_exit(self):
+        reply = QMessageBox.question(
+            self,
+            "Exit Application",
+            "Are you sure you want to exit?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            QApplication.quit()
+
+    def closeEvent(self, event):
+        reply = QMessageBox.question(
+            self,
+            "Exit Application",
+            "Are you sure you want to exit?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+
 
 if __name__ == "__main__":
 
@@ -616,17 +477,8 @@ if __name__ == "__main__":
         with open(style_file, "r") as f:
             app.setStyleSheet(f.read())
  
-
-    
-    lang=get_saved_language()
-    if lang:
-        print(lang)
-        window = MainWindow(language=lang)
+    dialog = RootWindow()
+    if dialog.exec_() == QDialog.Accepted:
+        window = MainWindow(language=dialog.language_combo.currentText())
         window.show()
         sys.exit(app.exec_())
-    else:
-        dialog = RootWindow()
-        if dialog.exec_() == QDialog.Accepted:
-            window = MainWindow(language=dialog.language_combo.currentText())
-            window.show()
-            sys.exit(app.exec_())

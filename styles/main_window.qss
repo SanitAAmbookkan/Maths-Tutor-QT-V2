@@ -119,45 +119,6 @@ QPushButton#audio-button[theme="dark"]:hover {
     color: #ffffff;
 }
 
-/* === QUICK PLAY BUTTON === */
-QPushButton[class="quick-play-button"][theme="light"] {
-    background-color: #e67e22;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    padding: 14px 30px;
-    border-radius: 10px;
-    border: 2px solid #d35400;
-}
-
-QPushButton[class="quick-play-button"][theme="light"]:hover {
-    background-color: #d35400;
-}
-
-QPushButton[class="quick-play-button"][theme="dark"] {
-    background-color: #ff8c42;            /* Softer amber-orange */
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 600;
-    padding: 14px 30px;
-    border-radius: 12px;
-    border: 2px solid #ffa366;            /* Lighter orange border */
- 
-}
-
-QPushButton[class="quick-play-button"][theme="dark"]:hover {
-    background-color: #ff9e57;            /* Slightly brighter on hover */
-    border: 2px solid #ffc07a;
-    color: #000000;                      
-}
-
-QPushButton[class="quick-play-button"][theme="dark"]:focus {
-    background-color: #ffb46a;            
-    border: 3px solid #ffd27f;            
-    color: #000000;
-    outline: none;
-}
-
 /* === TAB FOCUS (ACCESSIBILITY) === */
 QPushButton:focus {
     outline: none;
@@ -176,12 +137,6 @@ QPushButton[theme="dark"]:focus {
     border: 2px solid #ff9900;
 }
 
-/* Quick Play Button Focus */
-QPushButton[class="quick-play-button"]:focus {
-    border: 3px solid #ffd700;
-}
-
-/* Mute Button Focus */
 QPushButton#audio-button:focus {
     border: 2px solid #ff9900;
     outline: none;

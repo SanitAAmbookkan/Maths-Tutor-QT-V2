@@ -460,19 +460,6 @@ class MainWindow(QMainWindow):
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
 
-        # 🔁 Calculate next available row dynamically
-        next_row = (len(sections) + 2) // 3
-
-        # ✅ Add QUICK PLAY button on new row
-        quick_play_btn = QPushButton(tr("QUICK PLAY"))
-        quick_play_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        quick_play_btn.setMinimumHeight(50)
-        quick_play_btn.setProperty("class", "quick-play-button")
-        quick_play_btn.setAccessibleName("Quick Play")
-        quick_play_btn.clicked.connect(lambda: print("[INFO] QUICK PLAY clicked."))
-
-        button_grid.addWidget(quick_play_btn, next_row, 0, 1, 3, alignment=Qt.AlignCenter)
-
         return button_grid
     
 

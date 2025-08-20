@@ -399,15 +399,16 @@ def apply_theme(widget, theme):
         return
 
     widget.setProperty("theme", theme)
-    widget.setStyleSheet("")
     widget.style().unpolish(widget)
     widget.style().polish(widget)
+    widget.update()
 
-    for child in widget.findChildren((QWidget, QLabel, QLineEdit, QPushButton)):
+    for child in widget.findChildren(QWidget):  # covers all widgets
         child.setProperty("theme", theme)
-        child.setStyleSheet("")
         child.style().unpolish(child)
         child.style().polish(child)
+        child.update()
+
 
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, initial_difficulty=1, main_window=None):
@@ -436,6 +437,8 @@ class SettingsDialog(QDialog):
         self.difficulty_label = create_label(DIFFICULTY_LEVELS[initial_difficulty], font_size=12)
        
         self.difficulty_slider.valueChanged.connect(self.update_difficulty_label)
+        self.setProperty("class", "settings-dialog")
+        self.setProperty("theme", parent.current_theme)  # pass current theme
         
 
     

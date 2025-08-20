@@ -244,8 +244,10 @@ class MainWindow(QMainWindow):
         apply_theme(self.central_widget, self.current_theme)
 
             
-        # ✅ Always ensure Story button gets focus on UI load
+        # ensure Story button & Quickplay button gets focus on UI load
         self.focus_story_button()
+        self.focus_quickplay_button()
+
 
     def focus_story_button(self):
         """✅ Ensure Story button is focused (called on init and return)"""
@@ -253,6 +255,12 @@ class MainWindow(QMainWindow):
             if btn.text() == tr("Story"):
                 btn.setFocus()
                 break
+            
+    def focus_quickplay_button(self):
+        """✅ Ensure Quick Play button is focused on mode selection page"""
+        if hasattr(self, "quickPlayButton") and self.quickPlayButton:
+            self.quickPlayButton.setFocus()
+
 
     def create_mode_selection_page(self):
         widget = QWidget()
@@ -266,11 +274,11 @@ class MainWindow(QMainWindow):
         layout.addWidget(label)
 
         buttons = [
+            ("🏃 Quickplay Mode", self.start_quickplay_mode),
             ("🎓 Learning Mode", self.start_learning_mode),
             ("🎮 Game Mode", self.start_game_mode),
-            ("⚡ Quickplay", self.start_quickplay_mode)
+            
         ]
-
         for text, callback in buttons:
             btn = QPushButton(text)
             btn.setMinimumSize(240, 65)  # ✅ Uniform large size for all mode buttons
@@ -278,6 +286,9 @@ class MainWindow(QMainWindow):
             btn.setProperty("theme", self.current_theme)
             btn.clicked.connect(callback)
             layout.addWidget(btn)
+
+            if "Quickplay" in text:
+                self.quickPlayButton = btn
 
         return widget
 
@@ -459,7 +470,7 @@ class MainWindow(QMainWindow):
             self.menu_buttons.append(button)
             row, col = divmod(i, 3)
             button_grid.addWidget(button, row, col)
-
+  
         return button_grid
     
 

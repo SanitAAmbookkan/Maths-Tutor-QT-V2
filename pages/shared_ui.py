@@ -435,6 +435,8 @@ class SettingsDialog(QDialog):
         self.difficulty_slider.setAccessibleDescription(f"Use left or right arrow keys to select difficulty level. The levels are Simple, Easy, Medium, Hard and challenging.")
         self.difficulty_slider.setValue(initial_difficulty)
         self.difficulty_label = create_label(DIFFICULTY_LEVELS[initial_difficulty], font_size=12)
+        self.difficulty_label.setProperty("class", "difficulty-label")
+        self.difficulty_label.setProperty("theme", parent.current_theme)
        
         self.difficulty_slider.valueChanged.connect(self.update_difficulty_label)
         self.setProperty("class", "settings-dialog")
@@ -458,9 +460,13 @@ class SettingsDialog(QDialog):
         layout.setSpacing(12)  # Add breathing space between widgets
         layout.setContentsMargins(20, 20, 20, 20)
 
-        layout.addWidget(create_label("Select Difficulty:", font_size=12, bold=False))
+        difficulty_label = QLabel("Select Difficulty:")
+        difficulty_label.setProperty("class", "difficulty-label")
+        difficulty_label.setProperty("theme", parent.current_theme)
+        layout.addWidget(difficulty_label)
         layout.addWidget(self.difficulty_slider)
         layout.addWidget(self.difficulty_label)
+
 
         layout.addWidget(self.language_reset_btn)
 

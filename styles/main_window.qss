@@ -23,14 +23,21 @@ QLabel[class="question-label"] {
     padding: 10px 12px;
 }
 
+QLabel.difficulty-label {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 6px 10px 6px 10px;
+    line-height: 120%;
+}
+
 /* ================== LINE EDITS / ANSWERS ================== */
 QLineEdit.answer-input {
     font-size: 20px;
     padding: 10px 14px;
     border: 2px solid #888;
     border-radius: 12px;
-    min-height: 36px;   /* Ensures text fits vertically */
-    min-width: 0px;     /* Allow layout to control width */
+    min-height: 36px;
+    min-width: 0px;
 }
 
 QLineEdit.answer-input:focus {
@@ -46,7 +53,8 @@ QWidget[theme="light"] {
 
 QLabel.main-title[theme="light"],
 QLabel.subtitle[theme="light"],
-QLabel.question-label[theme="light"] {
+QLabel.question-label[theme="light"],
+QLabel.difficulty-label[theme="light"] {
     color: #1f1f1f;
 }
 
@@ -64,9 +72,12 @@ QPushButton[theme="light"] {
     border-radius: 12px;
     border: 2px solid #005999;
 }
-
 QPushButton[theme="light"]:hover {
     background-color: #005999;
+}
+QPushButton[theme="light"]:focus {
+    background-color: #c0d7ec;
+    color: #000000;
 }
 
 /* ================== DARK THEME ================== */
@@ -77,7 +88,8 @@ QWidget[theme="dark"] {
 
 QLabel.main-title[theme="dark"],
 QLabel.subtitle[theme="dark"],
-QLabel.question-label[theme="dark"] {
+QLabel.question-label[theme="dark"],
+QLabel.difficulty-label[theme="dark"] {
     color: #ffffff;
 }
 
@@ -86,7 +98,6 @@ QLineEdit.answer-input[theme="dark"] {
     color: #ffffff;
     border: 2px solid #5dade2;
 }
-
 QLineEdit.answer-input[theme="dark"]:focus {
     border-color: #FFD700;
     background-color: #3a3a3a;
@@ -101,25 +112,12 @@ QPushButton[theme="dark"] {
     border-radius: 12px;
     border: 2px solid #1B4F72;
 }
-
 QPushButton[theme="dark"]:hover {
     background-color: #1B4F72;
 }
-
-/* ================== UNIFIED FOCUS ================== */
-QPushButton:focus {
-    outline: none;
-    border: 3px solid #FFD700;
-}
-
-QPushButton[theme="light"]:focus {
-    background-color: #c0d7ec;
-    color: #000000;
-}
-
 QPushButton[theme="dark"]:focus {
     background-color: #3a3f44;
-    color: #ffffff;
+    color: #ffffff;   /* keep letters visible when tabbed */
 }
 
 /* ================== FOOTER BUTTONS ================== */
@@ -137,7 +135,6 @@ QComboBox.combo-box {
     border: 2px solid #888;
     min-width: 180px;
 }
-
 QComboBox.combo-box:focus {
     border: 2px solid #FFD700;
     background-color: #e6f7ff;

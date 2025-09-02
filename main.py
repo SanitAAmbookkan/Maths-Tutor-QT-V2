@@ -140,7 +140,7 @@ class MainWindow(QMainWindow):
         self.play_background_music()
         #self.player = self.setup_background_music()
 
-        self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
+        self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")P
 
     def init_ui(self):
         self.central_widget = QWidget()
@@ -589,6 +589,8 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(self.startup_widget)  # ✅ Show mode selection page
         self.section_footer.hide()
         self.main_footer.show()
+        self.focus_quickplay_button()
+        
     def back_to_home(self):
         """Switch to the home menu page."""
         self.stack.setCurrentWidget(self.menu_widget)     # ✅ Show home menu page

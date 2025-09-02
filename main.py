@@ -141,15 +141,6 @@ class MainWindow(QMainWindow):
         #self.player = self.setup_background_music()
 
         self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
-    
-    def keyPressEvent(self, event):
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
-            focused = self.focusWidget()
-            if isinstance(focused, QPushButton):
-                focused.click()
-        else:
-            super().keyPressEvent(event)
-
 
     def init_ui(self):
         self.central_widget = QWidget()

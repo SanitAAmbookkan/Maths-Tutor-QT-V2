@@ -2,10 +2,10 @@
 
 from PyQt5.QtWidgets import ( QWidget, QLabel, QHBoxLayout, QPushButton,
                               QVBoxLayout,QSizePolicy, QDialog, QSlider, QDialogButtonBox
-                              ,QSpacerItem,QLineEdit,QMessageBox)
+                              ,QSpacerItem,QLineEdit,QMessageBox,QApplication,QShortcut )
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
+from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator,QKeySequence
 from question.loader import QuestionProcessor
 from time import time
 import random 
@@ -185,6 +185,39 @@ def wrap_center(widget):
     layout.addStretch()             # Push from the right
     container.setLayout(layout)
     return container
+
+def setup_exit_handling(window, require_confirmation=True):
+    """Attach Ctrl+Q shortcut and optional confirmation to any window."""
+
+    exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), window)
+    exit_shortcut.setContext(Qt.ApplicationShortcut)
+    exit_shortcut.activated.connect(lambda: confirm_exit(window, require_confirmation))
+
+    def custom_close_event(event):
+        if not confirm_exit(window, require_confirmation):
+            event.ignore()
+        else:
+            event.accept()
+    window.closeEvent = custom_close_event
+
+
+def confirm_exit(window, require_confirmation=True):
+    if not require_confirmation:
+        QApplication.quit()
+        return True
+
+    reply = QMessageBox.question(
+        window,
+        "Exit Application",
+        "Are you sure you want to exit?",
+        QMessageBox.Yes | QMessageBox.No,
+        QMessageBox.No
+    )
+    if reply == QMessageBox.Yes:
+        QApplication.quit()
+        return True
+    return False
+
 
 class QuestionWidget(QWidget):
     def __init__(self, processor,window=None,next_question_callback=None):

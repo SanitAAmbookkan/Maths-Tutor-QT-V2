@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt,QUrl, QSize
 from question.loader import QuestionProcessor
-from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog, create_main_footer_buttons,QuestionWidget   
+from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog, create_main_footer_buttons,QuestionWidget,setup_exit_handling 
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -27,6 +27,7 @@ class RootWindow(QDialog):
         self.setFixedSize(400, 250 if not self.minimal else 150)
         self.init_ui()
         self.load_style("language_dialog.qss")
+        setup_exit_handling(self, require_confirmation=False)
  
     def init_ui(self):
         layout = QVBoxLayout()
@@ -128,7 +129,7 @@ class MainWindow(QMainWindow):
         from language import language
         language.selected_language=self.language
         self.init_ui()
-        self.setup_shortcuts()
+        setup_exit_handling(self, require_confirmation=True)
 
         self.load_style("main_window.qss")
         self.current_theme = "light"  # Initial theme
@@ -620,22 +621,6 @@ class MainWindow(QMainWindow):
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
         apply_theme(self.central_widget, self.current_theme)
         #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
-    
-    def setup_shortcuts(self):  # ✅ Newly added method
-        exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
-        exit_shortcut.setContext(Qt.ApplicationShortcut)
-        exit_shortcut.activated.connect(self.confirm_exit)
-
-    def confirm_exit(self):
-        reply = QMessageBox.question(
-            self,
-            "Exit Application",
-            "Are you sure you want to exit?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        if reply == QMessageBox.Yes:
-            QApplication.quit()
 
     def closeEvent(self, event):
         reply = QMessageBox.question(

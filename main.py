@@ -50,6 +50,7 @@ class RootWindow(QDialog):
             self.remember_check = QCheckBox("Remember my selection")
             self.remember_check.setChecked(False)
             self.remember_check.setProperty("class", "checkbox")
+            self.remember_check.setStyleSheet("color: #ffffff;")
             layout.addWidget(self.remember_check)
         
         layout.addStretch()

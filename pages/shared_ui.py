@@ -10,6 +10,9 @@ from question.loader import QuestionProcessor
 from time import time
 import random 
 from tts.tts_worker import TextToSpeech
+from PyQt5.QtCore import QTimer
+from PyQt5.QtMultimedia import QSound
+
 
 
 DIFFICULTY_LEVELS = ["Simple", "Easy", "Medium", "Hard", "Challenging"]
@@ -298,25 +301,50 @@ class QuestionWidget(QWidget):
     
     def load_new_question(self):
         if hasattr(self, "gif_feedback_label"):
-    
             self.hide_feedback_gif()
 
-        
         question_text, self.answer = self.processor.get_questions()
         self.start_time = time()
+
+        # Show question text
         self.label.setText(question_text)
-        
-        self.input_box.setText("")  # ✨ Clear only the input
+        self.input_box.setText("")
         self.result_label.setText("")
         self.show_feedback_gif("question")
 
+        # 🔹 Special case: Bellring → play bells instead of reading numbers
+        if self.processor.questionType.lower() == "bellring":
+            try:
+                count = int(float(self.answer))
+                if count > 0:
+                    self.play_bell_sounds(count)
+            except Exception as e:
+                print("[Bellring ERROR]", e)
+        else:
+            if hasattr(self, 'tts'):
+                self.tts.speak(question_text)
 
-        # Speak question for accessibility
-        if hasattr(self, 'tts'):
-            self.tts.speak(question_text)
 
-    
-            
+   
+    def play_bell_sounds(self, count):
+        """Play the bell sound 'count' times with a timer delay."""
+        if not hasattr(self, "bell_timer"):
+            self.bell_timer = QTimer(self)
+            self.bell_timer.timeout.connect(self.do_ring)
+
+        self.current_ring = 0
+        self.total_rings = count
+        self.bell_timer.start(700)  # 🔔 ring every 700 ms
+
+    def do_ring(self):
+        if self.current_ring < self.total_rings:
+            QSound.play("sounds/click-button.wav")  # ensure correct relative path
+            self.current_ring += 1
+        else:
+            self.bell_timer.stop()
+
+
+   
     def check_answer(self):
         try:
             user_input = self.input_box.text().strip()

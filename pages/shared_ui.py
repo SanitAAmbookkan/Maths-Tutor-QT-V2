@@ -2,10 +2,10 @@
 
 from PyQt5.QtWidgets import ( QWidget, QLabel, QHBoxLayout, QPushButton,
                               QVBoxLayout,QSizePolicy, QDialog, QSlider, QDialogButtonBox
-                              ,QSpacerItem,QLineEdit,QMessageBox)
+                              ,QSpacerItem,QLineEdit,QMessageBox,QApplication,QShortcut )
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator
+from PyQt5.QtGui import QFont, QPalette, QColor, QIntValidator,QKeySequence
 from question.loader import QuestionProcessor
 from time import time
 import random 
@@ -185,6 +185,39 @@ def wrap_center(widget):
     layout.addStretch()             # Push from the right
     container.setLayout(layout)
     return container
+
+def setup_exit_handling(window, require_confirmation=True):
+    """Attach Ctrl+Q shortcut and optional confirmation to any window."""
+
+    exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), window)
+    exit_shortcut.setContext(Qt.ApplicationShortcut)
+    exit_shortcut.activated.connect(lambda: confirm_exit(window, require_confirmation))
+
+    def custom_close_event(event):
+        if not confirm_exit(window, require_confirmation):
+            event.ignore()
+        else:
+            event.accept()
+    window.closeEvent = custom_close_event
+
+
+def confirm_exit(window, require_confirmation=True):
+    if not require_confirmation:
+        QApplication.quit()
+        return True
+
+    reply = QMessageBox.question(
+        window,
+        "Exit Application",
+        "Are you sure you want to exit?",
+        QMessageBox.Yes | QMessageBox.No,
+        QMessageBox.No
+    )
+    if reply == QMessageBox.Yes:
+        QApplication.quit()
+        return True
+    return False
+
 
 class QuestionWidget(QWidget):
     def __init__(self, processor,window=None,next_question_callback=None):
@@ -417,15 +450,16 @@ def apply_theme(widget, theme):
         return
 
     widget.setProperty("theme", theme)
-    widget.setStyleSheet("")
     widget.style().unpolish(widget)
     widget.style().polish(widget)
+    widget.update()
 
-    for child in widget.findChildren((QWidget, QLabel, QLineEdit, QPushButton)):
+    for child in widget.findChildren(QWidget):  # covers all widgets
         child.setProperty("theme", theme)
-        child.setStyleSheet("")
         child.style().unpolish(child)
         child.style().polish(child)
+        child.update()
+
 
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, initial_difficulty=1, main_window=None):
@@ -452,8 +486,12 @@ class SettingsDialog(QDialog):
         self.difficulty_slider.setAccessibleDescription(f"Use left or right arrow keys to select difficulty level. The levels are Simple, Easy, Medium, Hard and challenging.")
         self.difficulty_slider.setValue(initial_difficulty)
         self.difficulty_label = create_label(DIFFICULTY_LEVELS[initial_difficulty], font_size=12)
+        self.difficulty_label.setProperty("class", "difficulty-label")
+        self.difficulty_label.setProperty("theme", parent.current_theme)
        
         self.difficulty_slider.valueChanged.connect(self.update_difficulty_label)
+        self.setProperty("class", "settings-dialog")
+        self.setProperty("theme", parent.current_theme)  # pass current theme
         
 
     
@@ -473,9 +511,13 @@ class SettingsDialog(QDialog):
         layout.setSpacing(12)  # Add breathing space between widgets
         layout.setContentsMargins(20, 20, 20, 20)
 
-        layout.addWidget(create_label("Select Difficulty:", font_size=12, bold=False))
+        difficulty_label = QLabel("Select Difficulty:")
+        difficulty_label.setProperty("class", "difficulty-label")
+        difficulty_label.setProperty("theme", parent.current_theme)
+        layout.addWidget(difficulty_label)
         layout.addWidget(self.difficulty_slider)
         layout.addWidget(self.difficulty_label)
+
 
         layout.addWidget(self.language_reset_btn)
 

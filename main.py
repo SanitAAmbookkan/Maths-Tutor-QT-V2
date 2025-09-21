@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt,QUrl, QSize
 from question.loader import QuestionProcessor
-from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog, create_main_footer_buttons
+from pages.shared_ui import create_footer_buttons, apply_theme, SettingsDialog, create_main_footer_buttons,QuestionWidget,setup_exit_handling 
 from pages.ques_functions import load_pages, upload_excel   # ← your new function
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -14,8 +14,6 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from language.language import get_saved_language,save_selected_language_to_file,tr
 
 from PyQt5.QtGui import QMovie, QKeySequence, QPixmap, QFont, QIcon
-
-
 
 
 
@@ -29,6 +27,7 @@ class RootWindow(QDialog):
         self.setFixedSize(400, 250 if not self.minimal else 150)
         self.init_ui()
         self.load_style("language_dialog.qss")
+        setup_exit_handling(self, require_confirmation=False)
  
     def init_ui(self):
         layout = QVBoxLayout()
@@ -52,6 +51,7 @@ class RootWindow(QDialog):
             self.remember_check = QCheckBox("Remember my selection")
             self.remember_check.setChecked(False)
             self.remember_check.setProperty("class", "checkbox")
+            self.remember_check.setStyleSheet("color: #ffffff;")
             layout.addWidget(self.remember_check)
         
         layout.addStretch()
@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
         from language import language
         language.selected_language=self.language
         self.init_ui()
-        self.setup_shortcuts()
+        setup_exit_handling(self, require_confirmation=True)
 
         self.load_style("main_window.qss")
         self.current_theme = "light"  # Initial theme
@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
         self.play_background_music()
         #self.player = self.setup_background_music()
 
-        self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")
+        self.difficulty_index = 1 # Default to level 0 (e.g., "Very Easy")P
 
     def init_ui(self):
         self.central_widget = QWidget()
@@ -259,8 +259,10 @@ class MainWindow(QMainWindow):
         apply_theme(self.central_widget, self.current_theme)
 
             
-        # ✅ Always ensure Story button gets focus on UI load
+        # ensure Story button & Quickplay button gets focus on UI load
         self.focus_story_button()
+        self.focus_quickplay_button()
+
 
     def focus_story_button(self):
         """✅ Ensure Story button is focused (called on init and return)"""
@@ -268,6 +270,12 @@ class MainWindow(QMainWindow):
             if btn.text() == tr("Story"):
                 btn.setFocus()
                 break
+            
+    def focus_quickplay_button(self):
+        """✅ Ensure Quick Play button is focused on mode selection page"""
+        if hasattr(self, "quickPlayButton") and self.quickPlayButton:
+            self.quickPlayButton.setFocus()
+
 
     def create_mode_selection_page(self):
         widget = QWidget()
@@ -281,11 +289,10 @@ class MainWindow(QMainWindow):
         layout.addWidget(label)
 
         buttons = [
-             ("⚡ Quickplay", self.start_quickplay_mode),
+             ("⚡Quickplay", self.start_quickplay_mode),
             ("🎮 Game Mode", self.start_game_mode),
             ("🎓 Learning Mode", self.start_learning_mode)
         ]
-
         for text, callback in buttons:
             btn = QPushButton(text)
             btn.setMinimumSize(240, 65)  # ✅ Uniform large size for all mode buttons
@@ -294,12 +301,8 @@ class MainWindow(QMainWindow):
             btn.clicked.connect(callback)
             layout.addWidget(btn)
             
-        if text.startswith("⚡ Quickplay"):
-            btn.setFocus()        # Highlight it
-            btn.setDefault(True)  # Enter/Return triggers it
-
-        
-        
+            if "Quickplay" in text:
+                self.quickPlayButton = btn
 
         return widget
 
@@ -310,49 +313,57 @@ class MainWindow(QMainWindow):
         self.play_sound("click-button.wav")
 
     def start_game_mode(self):
-        self.clear_main_layout()
+        if hasattr(self, "game_mode_container"):
+            self.stack.setCurrentWidget(self.game_mode_container)
+            self.main_footer.show()      # Show the global footer
+            self.section_footer.hide()   # Hide section footer
+            return
 
-        widget = QWidget()
+        # Create container
+        self.game_mode_container = QWidget()
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
-        widget.setLayout(layout)
+        self.game_mode_container.setLayout(layout)
 
-    # Title
+        # Title
         title_label = QLabel("Select Game Difficulty")
         title_label.setAlignment(Qt.AlignCenter)
-        title_label.setProperty("class", "main-title")  # Styled in QSS
+        title_label.setProperty("class", "main-title")
         layout.addWidget(title_label)
 
-    # Subtitle
+        # Subtitle
         subtitle_label = QLabel("Choose your challenge level")
         subtitle_label.setAlignment(Qt.AlignCenter)
-        subtitle_label.setProperty("class", "subtitle")  # Optional: define in QSS
+        subtitle_label.setProperty("class", "subtitle")
         layout.addWidget(subtitle_label)
 
-    # Difficulty Buttons (Blue Theme, Large, Rounded)
-        difficulties = [
-            (" Easy", 1),
-            (" Medium", 2),
-            (" Hard", 3),
-            (" Extra Hard", 4)
-        ]
+        # Difficulty Buttons
+        difficulties = [("Easy", 1), ("Medium", 2), ("Hard", 3), ("Extra Hard", 4)]
         for text, index in difficulties:
             btn = QPushButton(text)
-            btn.setMinimumSize(260, 70)  # Large size
-            btn.setProperty("class", "menu-button")  # Uses your blue theme QSS
+            btn.setMinimumSize(260, 70)
+            btn.setProperty("class", "menu-button")
             btn.setProperty("theme", self.current_theme)
             btn.clicked.connect(lambda _, idx=index: self.load_game_questions(idx))
             layout.addWidget(btn)
 
-    # Mole Image (optional visual match to menu)
+        # Optional Mole Image
         mole_label = QLabel()
         mole_label.setPixmap(QPixmap("assets/mole.png").scaled(120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         mole_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(mole_label)
 
-   
+        # Add to stack
+        self.stack.addWidget(self.game_mode_container)
+        self.stack.setCurrentWidget(self.game_mode_container)
 
-        self.main_layout.addWidget(widget)
+        # Show the **global footer**
+        self.main_footer.show()
+        self.section_footer.hide()   # Hide section footer for Game Mode
+
+        # Apply theme
+        apply_theme(self.game_mode_container, self.current_theme)
+
 
     def load_game_questions(self, difficulty_index):
         from pages.shared_ui import QuestionWidget
@@ -376,43 +387,27 @@ class MainWindow(QMainWindow):
         load_next_question()
 
 
-
     def start_quickplay_mode(self):
-        from pages.shared_ui import QuestionWidget
-        from question.loader import QuestionProcessor
 
-        processor = QuestionProcessor("Story", difficultyIndex=[0, 1])  # Easy + Medium
+        processor = QuestionProcessor("Story", difficultyIndex=[0, 1])
         processor.process_file()
 
-        self.clear_main_layout()
+        # Container for Quickplay
+        self.quickplay_container = QWidget()
+        quickplay_layout = QVBoxLayout()
+        self.quickplay_container.setLayout(quickplay_layout)
+
+        # QuestionWidget
         question_widget = QuestionWidget(processor, window=self)
-        self.main_layout.addWidget(question_widget)
-        
-        footer = create_footer_buttons(
-        ["Back to Menu"],
-        callbacks={"Back to Menu": self.create_mode_selection_page}
-        )
+        question_widget.setProperty("theme", self.current_theme)
+        quickplay_layout.addWidget(question_widget)
 
-        
-        audio_btn = self.create_audio_button()
-        footer.layout().insertWidget(0, audio_btn)
+        # Add to stack
+        self.stack.addWidget(self.quickplay_container)
+        self.stack.setCurrentWidget(self.quickplay_container)
 
-        self.main_layout.addWidget(footer)
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
+        # Apply theme
+        apply_theme(self.quickplay_container, self.current_theme)
 
 
 
@@ -596,6 +591,8 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(self.startup_widget)  # ✅ Show mode selection page
         self.section_footer.hide()
         self.main_footer.show()
+        self.focus_quickplay_button()
+        
     def back_to_home(self):
         """Switch to the home menu page."""
         self.stack.setCurrentWidget(self.menu_widget)     # ✅ Show home menu page
@@ -624,22 +621,6 @@ class MainWindow(QMainWindow):
         self.theme_button.setText("☀️" if self.current_theme == "dark" else "🌙")
         apply_theme(self.central_widget, self.current_theme)
         #self.tts.speak(f"{self.current_theme.capitalize()} theme activated")
-    
-    def setup_shortcuts(self):  # ✅ Newly added method
-        exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
-        exit_shortcut.setContext(Qt.ApplicationShortcut)
-        exit_shortcut.activated.connect(self.confirm_exit)
-
-    def confirm_exit(self):
-        reply = QMessageBox.question(
-            self,
-            "Exit Application",
-            "Are you sure you want to exit?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        if reply == QMessageBox.Yes:
-            QApplication.quit()
 
     def closeEvent(self, event):
         reply = QMessageBox.question(

@@ -35,8 +35,9 @@ def load_pages(section_name, back_callback, difficulty_index,
  
     # 👉 Custom logic for "Operations"
     if section_name.lower() == "operations":
-        title = create_label("Choose an Operation", font_size=22, bold=True)
-        title = create_label(tr("Choose an Operation"), font_size=22, bold=True)
+        title = create_label("Choose an Operation", bold=True)
+        title = create_label(tr("Choose an Operation"), bold=True)
+        title.setProperty("class", "subtitle")
         title.setAlignment(Qt.AlignCenter)
 
         grid = QGridLayout()
